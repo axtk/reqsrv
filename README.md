@@ -26,7 +26,7 @@ const service = new RequestService<WiktionarySchema>(
     // a custom request handler;
     // it's likely (but not required) to contain `fetch`, `node-fetch`,
     // `axios`, `grpc-js`, logging, default headers, whatever necessary
-    fetchText
+    fetchContent
 );
 
 // `tsc` will make sure there is no typo or type mismatch
@@ -126,4 +126,42 @@ await service.send('GET /:section', {
         fulltext: 1
     }
 });
+```
+
+### Basic JSON request handler
+
+```ts
+import type {Request, Response} from 'reqsrv';
+
+async function fetchJSON({method, url}: Request): Promise<Response> {
+    let response = await fetch(url, {method});
+    let {ok, status, statusText} = response;
+
+    if (!ok) {
+        return {
+            ok,
+            status,
+            statusText
+        };
+    }
+
+    try {
+        return {
+            ok,
+            status,
+            statusText,
+            body: await response.json()
+        };
+    }
+    catch (error) {
+        return {
+            ok: false,
+            status: 500,
+            statusText: 'Internal Server Error',
+            body: {
+                message: error.message
+            }
+        };
+    }
+}
 ```
