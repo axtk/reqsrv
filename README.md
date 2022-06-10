@@ -149,7 +149,7 @@ async function fetchJSON({method, url}: Request): Promise<Response> {
 const service = new RequestService<APISchema>(
     baseURL,
     customIsomorphicRequestHandler,
-    customAPIMap
+    customAPIMap // optional
 );
 ```
 
@@ -158,7 +158,7 @@ or
 ```ts
 // shared
 const service = new RequestService<APISchema>(baseURL);
-service.defineMethods(customAPIMap);
+service.defineMethods(customAPIMap); // optional
 
 // node
 service.setCallback(nodeRequestHandler);
