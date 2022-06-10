@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import {RequestService} from './src/RequestService';
-import type {Response, HTTPMethod} from './src/types';
+import type {Request, Response, HTTPMethod} from './src/types';
 
 // https://en.wiktionary.org/w/?search=test&fulltext=1
 type WiktionarySchema = {
@@ -33,10 +33,17 @@ type WiktionarySchema = {
     };
 };
 
-async function fetchText({method, url}: {method: HTTPMethod, url: string}): Promise<Response> {
+async function fetchText({method, url}: Request): Promise<Response> {
     console.log(`fetching '${method} ${url}'`);
     let response = await fetch(url, {method});
     let {ok, status, statusText} = response;
+    if (!ok) {
+        return {
+            ok,
+            status,
+            statusText,
+        };
+    }
     try {
         return {
             ok,
