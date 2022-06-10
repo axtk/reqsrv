@@ -63,6 +63,7 @@ service.defineMethods({
 ### Initialization
 
 ```ts
+// see `src/RequestService.ts` for more specific types
 const service = new RequestService<APISchema>(
     baseURL,
     customRequestHandler, // optional
