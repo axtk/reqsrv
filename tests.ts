@@ -16,6 +16,21 @@ type WiktionarySchema = {
             body: string;
         };
     };
+    'GET /:section': {
+        name: 'search2',
+        request: {
+            params: {
+                section: 'w';
+            };
+            query: {
+                search: string;
+                fulltext?: 0 | 1;
+            };
+        };
+        response: {
+            body: string;
+        };
+    };
 };
 
 async function fetchText({method, url}: {method: HTTPMethod, url: string}): Promise<Response> {
@@ -48,25 +63,72 @@ async function test(message: string, subject: () => Promise<void>) {
 (async () => {
 
 await test('RequestService(url, callback) + defineMethod()', async () => {
-    const service = new RequestService<WiktionarySchema>('https://en.wiktionary.org', fetchText);
-    console.log(await service.send('GET /w', {query: {search: 'example', fulltext: 1}}));
+    const service = new RequestService<WiktionarySchema>(
+        'https://en.wiktionary.org',
+        fetchText,
+    );
+
+    console.log(await service.send('GET /w', {
+        query: {search: 'example', fulltext: 1},
+    }));
 
     service.defineMethod('search', 'GET /w');
-    console.log(await service.api.search({query: {search: 'example', fulltext: 1}}));
+
+    console.log(await service.api.search({
+        query: {search: 'example', fulltext: 1},
+    }));
 });
 
 await test('RequestService(url, callback) + defineMethods()', async () => {
-    const service = new RequestService<WiktionarySchema>('https://en.wiktionary.org', fetchText);
-    console.log(await service.send('GET /w', {query: {search: 'example', fulltext: 1}}));
+    const service = new RequestService<WiktionarySchema>(
+        'https://en.wiktionary.org',
+        fetchText,
+    );
+
+    console.log(await service.send('GET /w', {
+        query: {search: 'example', fulltext: 1},
+    }));
 
     service.defineMethods({search: 'GET /w'});
-    console.log(await service.api.search({query: {search: 'example', fulltext: 1}}));
+
+    console.log(await service.api.search({
+        query: {search: 'example', fulltext: 1},
+    }));
 });
 
 await test('RequestService(url, callback, apiMap)', async () => {
-    const service = new RequestService<WiktionarySchema>('https://en.wiktionary.org', fetchText, {search: 'GET /w'});
-    console.log(await service.send('GET /w', {query: {search: 'example', fulltext: 1}}));
-    console.log(await service.api.search({query: {search: 'example', fulltext: 1}}));
+    const service = new RequestService<WiktionarySchema>(
+        'https://en.wiktionary.org',
+        fetchText,
+        {search: 'GET /w'},
+    );
+
+    console.log(await service.send('GET /w', {
+        query: {search: 'example', fulltext: 1},
+    }));
+
+    console.log(await service.api.search({
+        query: {search: 'example', fulltext: 1},
+    }));
+});
+
+await test('url path params', async () => {
+    const service = new RequestService<WiktionarySchema>(
+        'https://en.wiktionary.org',
+        fetchText,
+    );
+
+    console.log(await service.send('GET /:section', {
+        params: {section: 'w'},
+        query: {search: 'example', fulltext: 1},
+    }));
+
+    service.defineMethod('search2', 'GET /:section');
+
+    console.log(await service.api.search2({
+        params: {section: 'w'},
+        query: {search: 'example', fulltext: 1},
+    }));
 });
 
 })();
