@@ -70,31 +70,6 @@ const service = new RequestService<APISchema>(
 );
 ```
 
-### Cross-platform setup
-
-```ts
-// importable by the node and browser code
-const service = new RequestService<APISchema>(
-    baseURL,
-    customIsomorphicRequestHandler,
-    customAPIMap
-);
-```
-
-or
-
-```ts
-// shared
-const service = new RequestService<APISchema>(baseURL);
-service.defineMethods(customAPIMap);
-
-// node
-service.setCallback(nodeRequestHandler);
-
-// browser
-service.setCallback(browserRequestHandler);
-```
-
 ### URL path parameters
 
 ```ts
@@ -164,4 +139,29 @@ async function fetchJSON({method, url}: Request): Promise<Response> {
         };
     }
 }
+```
+
+### Cross-platform setup
+
+```ts
+// importable by the node and browser code
+const service = new RequestService<APISchema>(
+    baseURL,
+    customIsomorphicRequestHandler,
+    customAPIMap
+);
+```
+
+or
+
+```ts
+// shared
+const service = new RequestService<APISchema>(baseURL);
+service.defineMethods(customAPIMap);
+
+// node
+service.setCallback(nodeRequestHandler);
+
+// browser
+service.setCallback(browserRequestHandler);
 ```
