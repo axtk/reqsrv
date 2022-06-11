@@ -30,7 +30,7 @@ const service = new RequestService<WiktionarySchema>(
 );
 
 // `tsc` will make sure there is no typo or type mismatch
-await service.send('GET /w', {
+let {ok, status, body} = await service.send('GET /w', {
     query: {
         search: 'example',
         fulltext: 1
@@ -45,7 +45,7 @@ await service.send('GET /w', {
 // definition are used
 service.defineMethod('search', 'GET /w');
 
-service.api.search({
+let response = await service.api.search({
     query: {
         search: 'example',
         fulltext: 1
@@ -93,7 +93,7 @@ type WiktionarySchema = {
     };
 };
 
-await service.send('GET /:section', {
+let response = await service.send('GET /:section', {
     params: {
         section: 'w'
     },
