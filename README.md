@@ -5,7 +5,7 @@
 ## Examples
 
 ```ts
-// https://en.wiktionary.org/w/?search=example&fulltext=1
+// https://en.wiktionary.org/w?search=example&fulltext=1
 type WiktionarySchema = {
     'GET /w': {
         name: 'search',

@@ -1,4 +1,4 @@
-import type {HTTPMethod, Schema, Callback, API, APIMap} from './types';
+import type {HTTPMethod, Schema, Callback, API, APIMap, APIMapEntry, Request, Response} from './types';
 
 /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions */
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -15,7 +15,7 @@ export class RequestService<S extends Schema> {
 
         if (apiMap) this.defineMethods(apiMap);
     }
-    async send<T extends keyof S>(target: T, options: S[T]['request']): Promise<S[T]['response']> {
+    async send<T extends keyof S>(target: T, options: Request<S[T]['request']>): Promise<Response<S[T]['response']>> {
         let {method, url, params = {}, query = {}} = options;
 
         if (/^[A-Z]+\s/.test(String(target)))
@@ -37,16 +37,16 @@ export class RequestService<S extends Schema> {
             ...options,
             method,
             url: urlObject.href,
-        }) as S[T]['response'];
+        }) as Response<S[T]['response']>;
     }
     setCallback(callback: Callback): void {
         this.callback = callback;
     }
-    defineMethod<T extends keyof S = keyof S>(methodName: S[T]['name'], target: T): void {
-        this.api[methodName] = async options => await this.send(target, options);
+    defineMethod<T extends keyof S>(methodName: NonNullable<S[T]['name']>, target: T): void {
+        this.api[methodName] = this.send.bind(this, target);
     }
     defineMethods(methodMap: Partial<APIMap<S>>): void {
-        for (let [methodName, target] of Object.entries<keyof S>(methodMap))
+        for (let [methodName, target] of Object.entries(methodMap) as Array<APIMapEntry<S>>)
             this.defineMethod(methodName, target);
     }
 }
