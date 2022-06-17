@@ -3,24 +3,34 @@ export type HTTPMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'OPTIONS'
 export type Target = string;
 export type Extend<T, X> = T & Omit<X, keyof T>;
 
-export type Request<T extends Record<string, unknown> = Record<string, unknown>> = {
+type RequestCore = {
     method?: HTTPMethod;
     url?: string;
-} & Extend<T, {
+};
+
+type RequestExtension = {
     params?: Record<string, unknown>;
     query?: Record<string, unknown>;
     body?: unknown;
     headers?: Record<string, unknown>;
-}>;
+};
 
-export type Response<T extends Record<string, unknown> = Record<string, unknown>> = {
+export type Request<T extends RequestExtension = RequestExtension> =
+    RequestCore & Extend<T, Pick<RequestExtension, 'body' | 'headers'>>;
+
+type ResponseCore = {
     ok?: boolean;
     status?: number;
     statusText?: string;
-} & Extend<T, {
+};
+
+type ResponseExtension = {
     body?: unknown;
     headers?: Record<string, unknown>;
-}>;
+};
+
+export type Response<T extends ResponseExtension = ResponseExtension> =
+    ResponseCore & Extend<T, ResponseExtension>;
 
 export type SchemaEntry = {
     name?: string;
