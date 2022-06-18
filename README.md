@@ -5,8 +5,12 @@
 ## Examples
 
 ```ts
+import {RequestService, Schema} from 'reqsrv';
+
 // https://en.wiktionary.org/w?search=example&fulltext=1
-type WiktionarySchema = {
+// wrapping into the `Schema` generic type is optional, but
+// this helps validate the schema structure by means of `tsc`
+type WiktionarySchema = Schema<{
     'GET /w': {
         name: 'search',
         request: {
@@ -19,7 +23,7 @@ type WiktionarySchema = {
             body: string;
         };
     };
-};
+}>;
 
 const service = new RequestService<WiktionarySchema>(
     'https://en.wiktionary.org',
@@ -75,7 +79,7 @@ const service = new RequestService<APISchema>(
 
 ```ts
 // https://en.wiktionary.org/w/?search=test&fulltext=1
-type WiktionarySchema = {
+type WiktionarySchema = Schema<{
     'GET /:section': {
         name: 'search',
         request: {
@@ -91,7 +95,7 @@ type WiktionarySchema = {
             body: string;
         };
     };
-};
+}>;
 
 let response = await service.send('GET /:section', {
     params: {

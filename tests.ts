@@ -1,9 +1,9 @@
 import fetch from 'node-fetch';
 import {RequestService} from './src/RequestService';
-import type {Request, Response, HTTPMethod} from './src/types';
+import type {Request, Response, Schema, HTTPMethod} from './src/types';
 
 // https://en.wiktionary.org/w?search=test&fulltext=1
-type WiktionarySchema = {
+type WiktionarySchema = Schema<{
     'GET /w': {
         name: 'search',
         request: {
@@ -31,7 +31,7 @@ type WiktionarySchema = {
             body: string;
         };
     };
-};
+}>;
 
 async function fetchText({method, url}: Request): Promise<Response> {
     let response = await fetch(url, {method});

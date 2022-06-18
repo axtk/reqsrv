@@ -15,7 +15,10 @@ export class RequestService<S extends Schema> {
 
         if (apiMap) this.defineMethods(apiMap);
     }
-    async send<T extends keyof S>(target: T, options: Request<S[T]['request']>): Promise<Response<S[T]['response']>> {
+    async send<T extends keyof S>(
+        target: T,
+        options: Request<NonNullable<S[T]['request']>>,
+    ): Promise<Response<NonNullable<S[T]['response']>>> {
         let {method, url, params = {}, query = {}} = options;
 
         if (/^[A-Z]+\s/.test(String(target)))
@@ -37,7 +40,7 @@ export class RequestService<S extends Schema> {
             ...options,
             method,
             url: urlObject.href,
-        }) as Response<S[T]['response']>;
+        }) as Response<NonNullable<S[T]['response']>>;
     }
     setCallback(callback: Callback): void {
         this.callback = callback;
