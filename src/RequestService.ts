@@ -1,4 +1,14 @@
-import type {HTTPMethod, Schema, Callback, API, APIMap, APIMapEntry, Request, Response} from './types';
+import type {
+    HTTPMethod,
+    Schema,
+    Callback,
+    API,
+    APIMap,
+    APIMapEntry,
+    Request,
+    Response,
+    OneOf,
+} from './types';
 
 /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions */
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -18,7 +28,7 @@ export class RequestService<S extends Schema> {
     async send<T extends keyof S>(
         target: T,
         options: Request<NonNullable<S[T]['request']>>,
-    ): Promise<Response<NonNullable<S[T]['response']>>> {
+    ): Promise<Response<OneOf<NonNullable<S[T]['response']>>>> {
         let {method, url, params = {}, query = {}} = options;
 
         if (/^[A-Z]+\s/.test(String(target)))
@@ -40,7 +50,7 @@ export class RequestService<S extends Schema> {
             ...options,
             method,
             url: urlObject.href,
-        }) as Response<NonNullable<S[T]['response']>>;
+        }) as Response<OneOf<NonNullable<S[T]['response']>>>;
     }
     setCallback(callback: Callback): void {
         this.callback = callback;

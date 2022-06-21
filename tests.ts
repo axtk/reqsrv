@@ -20,16 +20,23 @@ type WiktionarySchema = Schema<{
         name: 'search2',
         request: {
             params: {
-                section: 'w';
+                section: 'w' | 'none';
             };
             query: {
                 search: string;
                 fulltext?: 0 | 1;
             };
         };
-        response: {
-            body: string;
-        };
+        response: [
+            {
+                status: 200;
+                body: string;
+            },
+            {
+                status: 404;
+                body: string;
+            },
+        ];
     };
 }>;
 
@@ -163,6 +170,27 @@ await test('url path params', async () => {
     });
     assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api status');
     assert(res2.body.includes(toHTMLTitle('example')), 'api title');
+});
+
+await test('code 404', async () => {
+    const service = new RequestService<WiktionarySchema>(
+        'https://en.wiktionary.org',
+        fetchText,
+    );
+
+    let res1 = await service.send('GET /:section', {
+        params: {section: 'none'},
+        query: {search: 'nonsense'},
+    });
+    assert(equal([res1.ok, res1.status, res1.statusText], [false, 404, 'Not Found']), 'send status');
+
+    service.defineMethod('search2', 'GET /:section');
+
+    let res2 = await service.api.search2({
+        params: {section: 'none'},
+        query: {search: 'nonsense'},
+    });
+    assert(equal([res2.ok, res2.status, res2.statusText], [false, 404, 'Not Found']), 'api status');
 });
 
 })();

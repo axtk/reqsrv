@@ -19,9 +19,14 @@ type WiktionarySchema = Schema<{
                 fulltext?: 0 | 1;
             };
         };
-        response: {
-            body: string;
-        };
+        // can be a single response shape if it fits any request,
+        // or an array of responses with different statuses
+        response: [
+            {
+                status: 200;
+                body: string;
+            }
+        ];
     };
 }>;
 
@@ -91,9 +96,12 @@ type WiktionarySchema = Schema<{
                 fulltext?: 0 | 1;
             };
         };
-        response: {
-            body: string;
-        };
+        response: [
+            {
+                status: 200;
+                body: string;
+            }
+        ];
     };
 }>;
 
