@@ -23,7 +23,7 @@ type WiktionarySchema = Schema<{
         // response: {
         //     body: string;
         // };
-        // or an array of responses with different statuses:
+        // or an array of response shapes with different statuses:
         response: [
             {
                 status: 200;
