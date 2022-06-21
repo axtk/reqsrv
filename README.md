@@ -2,14 +2,34 @@
 
 *A lightweight zero-dependency container for typed web APIs*
 
-- doesn't make requests on its own, but accepts an abstract request handling callback (there are a number of valid options for its implementation, while the external interface shouldn't be aware of its workings);
+The common request handling utilities like `fetch`, `node-fetch`, `axios` are not easily typed out-of-the-box. Also, `fetch` and `node-fetch` have a somewhat verbose twofold response handling (`await fetch()`, `await response.json()`). These issues can be easily solved with a thin container utility, and this package is one of the approaches. Its core features are:
+
+- it doesn't depend on a specific request handling utility, entrusting this opinionated part to the developer;
 - provides a common interface to handle API requests;
-- adds type checks to request handling.
+- adds type checks to request handling based on a custom API schema.
 
 ## Example
 
 ```ts
 import {RequestService, Schema} from 'reqsrv';
+
+const service = new RequestService<ServiceSchema>(
+    'https://api.example-service.com',
+    // a custom request handler;
+    // it's likely (but not required) to contain `fetch`, `node-fetch`,
+    // `axios`, `grpc-js`, logging, default headers, whatever necessary
+    fetchContent
+);
+
+// `tsc` will make sure that the parameters match the API target
+let {ok, status, body} = await service.send('GET /items/:id', {
+    params: {
+        id: 10
+    },
+    query: {
+        mode: 'full'
+    }
+});
 
 // wrapping into the `Schema` generic type is optional, but
 // this helps validate the schema structure by means of `tsc`
@@ -58,24 +78,6 @@ type ServiceSchema = Schema<{
     };
     // ... and so forth
 }>;
-
-const service = new RequestService<ServiceSchema>(
-    'https://example.com',
-    // a custom request handler;
-    // it's likely (but not required) to contain `fetch`, `node-fetch`,
-    // `axios`, `grpc-js`, logging, default headers, whatever necessary
-    fetchContent
-);
-
-// `tsc` will make sure that the parameters match the API target
-let {ok, status, body} = await service.send('GET /items/:id', {
-    params: {
-        id: 10
-    },
-    query: {
-        mode: 'full'
-    }
-});
 ```
 
 ### API alias methods
