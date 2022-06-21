@@ -1,6 +1,6 @@
 {
   "name": "reqsrv",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "A lightweight zero-dependency container for typed web APIs",
   "main": "dist/index.js",
   "type": "module",
