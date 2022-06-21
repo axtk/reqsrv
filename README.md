@@ -2,7 +2,11 @@
 
 *A lightweight zero-dependency container for typed web APIs*
 
-## Examples
+- doesn't make requests on its own, but accepts an abstract request handling callback (there are a number of valid options for its implementation, while the external interface shouldn't be aware of its workings);
+- provides a common interface to handle API requests;
+- adds type checks to request handling.
+
+## Example
 
 ```ts
 import {RequestService, Schema} from 'reqsrv';
