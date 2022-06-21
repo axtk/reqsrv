@@ -7,16 +7,21 @@
 ```ts
 import {RequestService, Schema} from 'reqsrv';
 
-// https://en.wiktionary.org/w?search=example&fulltext=1
 // wrapping into the `Schema` generic type is optional, but
 // this helps validate the schema structure by means of `tsc`
-type WiktionarySchema = Schema<{
-    'GET /w': {
-        name: 'search',
+type ServiceSchema = Schema<{
+    // a URL path of an API target can contain colon-prefixed
+    // parameters specified in `request.params`
+    'GET /items/:id': {
         request: {
-            query: {
-                search: string;
-                fulltext?: 0 | 1;
+            // `params` can be omitted if the URL path is fixed and
+            // has no parameter placeholders
+            params: {
+                id: number;
+            };
+            query?: {
+                /** @defaultValue 'compact' */
+                mode?: 'compact' | 'full';
             };
         };
         // can be a single response shape if it describes any output:
@@ -27,25 +32,44 @@ type WiktionarySchema = Schema<{
         response: [
             {
                 status: 200;
-                body: string;
+                body: {
+                    id: number;
+                    name?: string;
+                };
+            },
+            {
+                status: 400;
+                body: {
+                    message: string;
+                };
             }
         ];
+        name: 'getItem', // optional
     };
+    'POST /items/:id': {
+        // ...
+    };
+    'GET /items': {
+        // ...
+    };
+    // ... and so forth
 }>;
 
-const service = new RequestService<WiktionarySchema>(
-    'https://en.wiktionary.org',
+const service = new RequestService<ServiceSchema>(
+    'https://example.com',
     // a custom request handler;
     // it's likely (but not required) to contain `fetch`, `node-fetch`,
     // `axios`, `grpc-js`, logging, default headers, whatever necessary
     fetchContent
 );
 
-// `tsc` will make sure there is no typo or type mismatch
-let {ok, status, body} = await service.send('GET /w', {
+// `tsc` will make sure that the parameters match the API target
+let {ok, status, body} = await service.send('GET /items/:id', {
+    params: {
+        id: 10
+    },
     query: {
-        search: 'example',
-        fulltext: 1
+        mode: 'full'
     }
 });
 ```
@@ -53,14 +77,16 @@ let {ok, status, body} = await service.send('GET /w', {
 ### API alias methods
 
 ```ts
-// `tsc` will make sure only the names from the original schema type
-// definition are used
-service.defineMethod('search', 'GET /w');
+// the names specified in the schema are expected to be used here
+// (and `tsc` will make sure there is no mismatch)
+service.defineMethod('getItem', 'GET /items/:id');
 
-let response = await service.api.search({
+let response = await service.api.getItem({
+    params: {
+        id: 10
+    },
     query: {
-        search: 'example',
-        fulltext: 1
+        mode: 'full'
     }
 });
 ```
@@ -68,7 +94,7 @@ let response = await service.api.search({
 ```ts
 // for multiple definitions
 service.defineMethods({
-    search: 'GET /w'
+    getItem: 'GET /items/:id'
 });
 ```
 
@@ -81,42 +107,6 @@ const service = new RequestService<APISchema>(
     customRequestHandler, // optional
     customAPIMap // optional
 );
-```
-
-### URL path parameters
-
-```ts
-// https://en.wiktionary.org/w/?search=test&fulltext=1
-type WiktionarySchema = Schema<{
-    'GET /:section': {
-        name: 'search',
-        request: {
-            params: {
-                section: 'w';
-            };
-            query: {
-                search: string;
-                fulltext?: 0 | 1;
-            };
-        };
-        response: [
-            {
-                status: 200;
-                body: string;
-            }
-        ];
-    };
-}>;
-
-let response = await service.send('GET /:section', {
-    params: {
-        section: 'w'
-    },
-    query: {
-        search: 'example',
-        fulltext: 1
-    }
-});
 ```
 
 ### Basic JSON request handler
