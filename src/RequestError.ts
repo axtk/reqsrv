@@ -1,6 +1,7 @@
 import {RequestErrorOptions} from './types';
 
 export const REQUEST_ERROR_NAME = 'RequestError';
+export const DEFAULT_STATUS_TEXT = 'Unspecified';
 
 export class RequestError<T = unknown> extends Error {
     status: number | undefined;
@@ -8,7 +9,7 @@ export class RequestError<T = unknown> extends Error {
     data: T | undefined;
 
     constructor({status, statusText, data}: RequestErrorOptions<T> = {}) {
-        super(statusText ?? `code ${status ?? 'unspecified'}`);
+        super([status, statusText].join(' ').trim() || DEFAULT_STATUS_TEXT);
 
         this.name = REQUEST_ERROR_NAME;
         this.status = status;

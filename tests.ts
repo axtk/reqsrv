@@ -179,8 +179,9 @@ await test('code 404', async () => {
         });
     }
     catch (error) {
-        assert(error instanceof RequestError, 'instanceof RequestError');
+        assert(error instanceof RequestError, 'send instanceof');
         assert(equal([error.status, error.statusText], [404, 'Not Found']), 'send error');
+        assert(error.message === '404 Not Found', 'send error message');
     }
 
     service.defineMethod('search2', 'GET /:section');
@@ -192,8 +193,9 @@ await test('code 404', async () => {
         });
     }
     catch (error) {
-        assert(error instanceof RequestError, 'instanceof RequestError');
+        assert(error instanceof RequestError, 'api instanceof');
         assert(equal([error.status, error.statusText], [404, 'Not Found']), 'api error');
+        assert(error.message === '404 Not Found', 'api error message');
     }
 });
 
