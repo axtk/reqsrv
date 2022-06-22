@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import {RequestService} from './src/RequestService';
+import {RequestError} from './src/RequestError';
 import type {Request, Response, Schema, HTTPMethod} from './src/types';
 
 // https://en.wiktionary.org/w?search=test&fulltext=1
@@ -27,16 +28,9 @@ type WiktionarySchema = Schema<{
                 fulltext?: 0 | 1;
             };
         };
-        response: [
-            {
-                status: 200;
-                body: string;
-            },
-            {
-                status: 404;
-                body: string;
-            },
-        ];
+        response: {
+            body: string;
+        };
     };
 }>;
 
@@ -44,11 +38,10 @@ async function fetchText({method, url}: Request): Promise<Response> {
     let response = await fetch(url, {method});
     let {ok, status, statusText} = response;
     if (!ok) {
-        return {
-            ok,
+        throw new RequestError({
             status,
             statusText,
-        };
+        });
     }
     try {
         return {
@@ -59,12 +52,13 @@ async function fetchText({method, url}: Request): Promise<Response> {
         };
     }
     catch (error) {
-        return {
-            ok: false,
+        throw new RequestError({
             status: 500,
             statusText: 'Internal Server Error',
-            body: error.message,
-        };
+            data: {
+                message: error.message,
+            },
+        });
     }
 }
 
@@ -96,7 +90,7 @@ await test('RequestService(url, callback) + defineMethod()', async () => {
     let res1 = await service.send('GET /w', {
         query: {search: 'example', fulltext: 1},
     });
-    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send status');
+    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
     service.defineMethod('search', 'GET /w');
@@ -104,7 +98,7 @@ await test('RequestService(url, callback) + defineMethod()', async () => {
     let res2 = await service.api.search({
         query: {search: 'example', fulltext: 1},
     });
-    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api status');
+    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
     assert(res2.body.includes(toHTMLTitle('example')), 'api title');
 });
 
@@ -117,7 +111,7 @@ await test('RequestService(url, callback) + defineMethods()', async () => {
     let res1 = await service.send('GET /w', {
         query: {search: 'example', fulltext: 1},
     });
-    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send status');
+    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
     service.defineMethods({search: 'GET /w'});
@@ -125,7 +119,7 @@ await test('RequestService(url, callback) + defineMethods()', async () => {
     let res2 = await service.api.search({
         query: {search: 'example', fulltext: 1},
     });
-    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api status');
+    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
     assert(res2.body.includes(toHTMLTitle('example')), 'api title');
 });
 
@@ -139,13 +133,13 @@ await test('RequestService(url, callback, apiMap)', async () => {
     let res1 = await service.send('GET /w', {
         query: {search: 'example', fulltext: 1},
     });
-    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send status');
+    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
     let res2 = await service.api.search({
         query: {search: 'example', fulltext: 1},
     });
-    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api status');
+    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
     assert(res2.body.includes(toHTMLTitle('example')), 'api title');
 });
 
@@ -159,7 +153,7 @@ await test('url path params', async () => {
         params: {section: 'w'},
         query: {search: 'example', fulltext: 1},
     });
-    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send status');
+    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
     service.defineMethod('search2', 'GET /:section');
@@ -168,7 +162,7 @@ await test('url path params', async () => {
         params: {section: 'w'},
         query: {search: 'example', fulltext: 1},
     });
-    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api status');
+    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
     assert(res2.body.includes(toHTMLTitle('example')), 'api title');
 });
 
@@ -178,19 +172,29 @@ await test('code 404', async () => {
         fetchText,
     );
 
-    let res1 = await service.send('GET /:section', {
-        params: {section: 'none'},
-        query: {search: 'nonsense'},
-    });
-    assert(equal([res1.ok, res1.status, res1.statusText], [false, 404, 'Not Found']), 'send status');
+    try {
+        let res1 = await service.send('GET /:section', {
+            params: {section: 'none'},
+            query: {search: 'nonsense'},
+        });
+    }
+    catch (error) {
+        assert(error instanceof RequestError, 'instanceof RequestError');
+        assert(equal([error.status, error.statusText], [404, 'Not Found']), 'send error');
+    }
 
     service.defineMethod('search2', 'GET /:section');
 
-    let res2 = await service.api.search2({
-        params: {section: 'none'},
-        query: {search: 'nonsense'},
-    });
-    assert(equal([res2.ok, res2.status, res2.statusText], [false, 404, 'Not Found']), 'api status');
+    try {
+        let res2 = await service.api.search2({
+            params: {section: 'none'},
+            query: {search: 'nonsense'},
+        });
+    }
+    catch (error) {
+        assert(error instanceof RequestError, 'instanceof RequestError');
+        assert(equal([error.status, error.statusText], [404, 'Not Found']), 'api error');
+    }
 });
 
 })();

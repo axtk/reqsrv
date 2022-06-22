@@ -7,7 +7,6 @@ import type {
     APIMapEntry,
     Request,
     Response,
-    OneOf,
 } from './types';
 
 /** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions */
@@ -28,7 +27,7 @@ export class RequestService<S extends Schema> {
     async send<T extends keyof S>(
         target: T,
         options: Request<NonNullable<S[T]['request']>>,
-    ): Promise<Response<OneOf<NonNullable<S[T]['response']>>>> {
+    ): Promise<Response<NonNullable<S[T]['response']>>> {
         let {method, url, params = {}, query = {}} = options;
 
         if (/^[A-Z]+\s/.test(String(target)))
@@ -50,7 +49,7 @@ export class RequestService<S extends Schema> {
             ...options,
             method,
             url: urlObject.href,
-        }) as Response<OneOf<NonNullable<S[T]['response']>>>;
+        }) as Response<NonNullable<S[T]['response']>>;
     }
     setCallback(callback: Callback): void {
         this.callback = callback;

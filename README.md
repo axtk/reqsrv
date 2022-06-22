@@ -48,27 +48,13 @@ type ServiceSchema = Schema<{
                 mode?: 'compact' | 'full';
             };
         };
-        // can be a single response shape if it describes any output:
-        // response: {
-        //     body: string;
-        // };
-        // or an array of response shapes with different statuses:
-        response: [
-            {
-                status: 200;
-                body: {
-                    id: number;
-                    name?: string;
-                };
-            },
-            {
-                status: 400;
-                body: {
-                    message: string;
-                };
-            }
-        ];
-        name: 'getItem', // optional
+        response: {
+            body: {
+                id: number;
+                name?: string;
+            };
+        };
+        name: 'getItem'; // optional
     };
     'POST /items/:id': {
         // ...
@@ -120,7 +106,7 @@ const service = new RequestService<APISchema>(
 An example of a custom request handler passed to the `RequestService` constructor:
 
 ```ts
-import type {Request, Response} from 'reqsrv';
+import type {Request, Response, RequestError} from 'reqsrv';
 
 async function fetchJSON({method, url}: Request): Promise<Response> {
     // fits both the browser's `window.fetch` and the one imported
@@ -129,11 +115,10 @@ async function fetchJSON({method, url}: Request): Promise<Response> {
     let {ok, status, statusText} = response;
 
     if (!ok) {
-        return {
-            ok,
+        throw new RequestError({
             status,
             statusText
-        };
+        });
     }
 
     try {
@@ -145,14 +130,13 @@ async function fetchJSON({method, url}: Request): Promise<Response> {
         };
     }
     catch (error) {
-        return {
-            ok: false,
+        throw new RequestError({
             status: 500,
             statusText: 'Internal Server Error',
-            body: {
+            data: {
                 message: error.message
             }
-        };
+        });
     }
 }
 ```

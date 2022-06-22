@@ -1,5 +1,3 @@
-export type OneOf<T, I = unknown> = T extends Array<I> ? T[number] : T;
-export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 export type Extend<T, X> = T & Omit<X, keyof T>;
 
 export type HTTPMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'OPTIONS' | 'HEAD' | 'TRACE' | 'CONNECT';
@@ -41,13 +39,7 @@ export type Response<T extends ResponseExtension = ResponseExtension> =
 
 export type SchemaEntry = {
     request?: Request;
-    /**
-     * Either a single common response shape for any request with the status
-     * unrequired to be specified, or an array of response shapes corresponding
-     * to different statuses with the status property required for each
-     * response shape in the array.
-     */
-    response?: Response | Array<WithRequired<Response, 'status'>>;
+    response?: Response;
     /**
      * An optional name allowing to define alias API methods as an
      * alternative to API target keys.
@@ -94,5 +86,11 @@ export type APIMapEntry<S extends Schema> = [
 
 export type API<S extends Schema> = {
     [T in keyof S as NonNullable<S[T]['name']>]:
-        (options: Request<NonNullable<S[T]['request']>>) => Promise<Response<OneOf<NonNullable<S[T]['response']>>>>
+        (options: Request<NonNullable<S[T]['request']>>) => Promise<Response<NonNullable<S[T]['response']>>>
+};
+
+export type RequestErrorOptions<T = unknown> = {
+    status?: number;
+    statusText?: string;
+    data?: T;
 };
