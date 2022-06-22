@@ -117,10 +117,14 @@ const service = new RequestService<APISchema>(
 
 ### Basic JSON request handler
 
+An example of a custom request handler passed to the `RequestService` constructor:
+
 ```ts
 import type {Request, Response} from 'reqsrv';
 
 async function fetchJSON({method, url}: Request): Promise<Response> {
+    // fits both the browser's `window.fetch` and the one imported
+    // from `node-fetch` in a Node environment
     let response = await fetch(url, {method});
     let {ok, status, statusText} = response;
 
@@ -151,29 +155,4 @@ async function fetchJSON({method, url}: Request): Promise<Response> {
         };
     }
 }
-```
-
-### Cross-platform setup
-
-```ts
-// importable by the node and browser code
-const service = new RequestService<APISchema>(
-    baseURL,
-    customIsomorphicRequestHandler,
-    customAPIMap // optional
-);
-```
-
-or
-
-```ts
-// shared
-const service = new RequestService<APISchema>(baseURL);
-service.defineMethods(customAPIMap); // optional
-
-// node
-service.setCallback(nodeRequestHandler);
-
-// browser
-service.setCallback(browserRequestHandler);
 ```
