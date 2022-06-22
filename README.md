@@ -2,9 +2,7 @@
 
 *A lightweight zero-dependency container for typed web APIs*
 
-The common request handling utilities like `fetch`, `node-fetch`, `axios` are not easily typed out-of-the-box. Also, `fetch` and `node-fetch` have a somewhat verbose twofold response handling (`await fetch()`, `await response.json()`). These issues can be easily solved with a thin container utility, and this package is one of the approaches. Its core features are:
-
-- it doesn't depend on a specific request handling utility, entrusting this opinionated part to the developer;
+- doesn't internally depend on a specific request utility, entrusting this opinionated part to the developer;
 - provides a common interface to handle API requests;
 - adds type checks to request handling based on a custom API schema.
 
