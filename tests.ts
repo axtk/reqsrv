@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import {RequestService} from './src/RequestService';
 import {RequestError} from './src/RequestError';
-import type {Request, Response, Schema, HTTPMethod} from './src/types';
+import type {CallbackRequest, Response, Schema} from './src/types';
 
 // https://en.wiktionary.org/w?search=test&fulltext=1
 type WiktionarySchema = Schema<{
@@ -18,7 +18,7 @@ type WiktionarySchema = Schema<{
         };
     };
     'GET /:section': {
-        name: 'search2',
+        name: 'fetchSection',
         request: {
             params: {
                 section: 'w' | 'none';
@@ -29,12 +29,12 @@ type WiktionarySchema = Schema<{
             };
         };
         response: {
-            body: string;
+            body: string | null;
         };
     };
 }>;
 
-async function fetchText({method, url}: Request): Promise<Response> {
+async function fetchText({method, url}: CallbackRequest): Promise<Response> {
     let response = await fetch(url, {method});
     let {ok, status, statusText} = response;
     if (!ok) {
@@ -56,7 +56,7 @@ async function fetchText({method, url}: Request): Promise<Response> {
             status: 500,
             statusText: 'Internal Server Error',
             data: {
-                message: error.message,
+                message: error instanceof Error ? error.message : '',
             },
         });
     }
@@ -67,7 +67,7 @@ async function test(message: string, subject: () => Promise<void>) {
     await subject();
 }
 
-function assert(condition: boolean, message: string) {
+function assert(condition: boolean | undefined, message: string) {
     if (!condition) throw new Error(`Assertion failed: ${message}`);
 }
 
@@ -154,16 +154,16 @@ await test('url path params', async () => {
         query: {search: 'example', fulltext: 1},
     });
     assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
-    assert(res1.body.includes(toHTMLTitle('example')), 'send title');
+    assert(res1.body?.includes(toHTMLTitle('example')), 'send title');
 
-    service.defineMethod('search2', 'GET /:section');
+    service.defineMethod('fetchSection', 'GET /:section');
 
-    let res2 = await service.api.search2({
+    let res2 = await service.api.fetchSection({
         params: {section: 'w'},
         query: {search: 'example', fulltext: 1},
     });
     assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
-    assert(res2.body.includes(toHTMLTitle('example')), 'api title');
+    assert(res2.body?.includes(toHTMLTitle('example')), 'api title');
 });
 
 await test('code 404', async () => {
@@ -173,29 +173,33 @@ await test('code 404', async () => {
     );
 
     try {
-        let res1 = await service.send('GET /:section', {
+        await service.send('GET /:section', {
             params: {section: 'none'},
             query: {search: 'nonsense'},
         });
     }
     catch (error) {
         assert(error instanceof RequestError, 'send instanceof');
-        assert(equal([error.status, error.statusText], [404, 'Not Found']), 'send error');
-        assert(error.message === '404 Not Found', 'send error message');
+        if (error instanceof RequestError) {
+            assert(equal([error.status, error.statusText], [404, 'Not Found']), 'send error');
+            assert(error.message === '404 Not Found', 'send error message');
+        }
     }
 
-    service.defineMethod('search2', 'GET /:section');
+    service.defineMethod('fetchSection', 'GET /:section');
 
     try {
-        let res2 = await service.api.search2({
+        await service.api.fetchSection({
             params: {section: 'none'},
             query: {search: 'nonsense'},
         });
     }
     catch (error) {
         assert(error instanceof RequestError, 'api instanceof');
-        assert(equal([error.status, error.statusText], [404, 'Not Found']), 'api error');
-        assert(error.message === '404 Not Found', 'api error message');
+        if (error instanceof RequestError) {
+            assert(equal([error.status, error.statusText], [404, 'Not Found']), 'api error');
+            assert(error.message === '404 Not Found', 'api error message');
+        }
     }
 });
 

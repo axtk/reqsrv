@@ -14,7 +14,7 @@ const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export class RequestService<S extends Schema> {
     url: string;
-    callback: Callback;
+    callback: Callback | undefined;
     api: API<S>;
 
     constructor(url: string, callback?: Callback, apiMap?: Partial<APIMap<S>>) {
@@ -28,6 +28,9 @@ export class RequestService<S extends Schema> {
         target: T,
         options: Request<NonNullable<S[T]['request']>>,
     ): Promise<Response<NonNullable<S[T]['response']>>> {
+        if (!this.callback)
+            throw new Error('Missing request callback');
+
         let {method, url, params = {}, query = {}} = options;
 
         if (/^[A-Z]+\s/.test(String(target)))
@@ -55,6 +58,8 @@ export class RequestService<S extends Schema> {
         this.callback = callback;
     }
     defineMethod<T extends keyof S>(methodName: NonNullable<S[T]['name']>, target: T): void {
+        // @ts-ignore: type checking bound generic functions doesn't work well
+        // @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-2.html#caveats
         this.api[methodName] = this.send.bind(this, target);
     }
     defineMethods(methodMap: Partial<APIMap<S>>): void {

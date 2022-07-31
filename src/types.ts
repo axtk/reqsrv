@@ -73,7 +73,11 @@ export type APITarget = string;
 
 export type Schema<T extends Record<APITarget, SchemaEntry> = Record<APITarget, SchemaEntry>> = T;
 
-export type Callback = (options: Request) => Promise<Response>;
+export type CallbackRequest = Omit<Request, 'url'> & {
+    url: NonNullable<Request['url']>;
+};
+
+export type Callback = (options: CallbackRequest) => Promise<Response>;
 
 export type APIMap<S extends Schema> = {
     [T in keyof S as NonNullable<S[T]['name']>]: T;
