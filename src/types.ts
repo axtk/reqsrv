@@ -14,7 +14,8 @@ export type Extend<T, X> = T & Omit<X, keyof T>;
 export type APITarget = string;
 
 export type RequestCore = {
-    method?: APITarget;
+    target?: APITarget;
+    method?: string;
     service?: string;
     url?: string;
 };
