@@ -32,8 +32,8 @@ let {ok, status, body} = await service.send('GET /items/:id', {
 // wrapping into the `Schema` generic type is optional, but
 // this helps validate the schema structure by means of `tsc`
 type ServiceSchema = Schema<{
-    // a URL path of an API target can contain colon-prefixed
-    // parameters specified in `request.params`
+    // a schema key can be any unique string, for an HTTP API
+    // a pair of a method and a path can serve this purpose
     'GET /items/:id': {
         request: {
             // `params` can be omitted if the URL path is fixed and
@@ -52,7 +52,7 @@ type ServiceSchema = Schema<{
                 name?: string;
             };
         };
-        name: 'getItem'; // optional
+        alias: 'getItem'; // optional
     };
     'POST /items/:id': {
         // ...
@@ -64,13 +64,15 @@ type ServiceSchema = Schema<{
 }>;
 ```
 
-### API alias methods
+### Aliases to API methods
 
 ```ts
-// the names specified in the schema are expected to be used here
+// the aliases specified in the schema are expected to be used here
 // (and `tsc` will make sure there is no mismatch)
-service.defineMethod('getItem', 'GET /items/:id');
+service.setAlias('getItem', 'GET /items/:id');
 
+// now, `service.send('GET /items/:id', options)` has another
+// equivalent form:
 let response = await service.api.getItem({
     params: {
         id: 10
@@ -82,10 +84,14 @@ let response = await service.api.getItem({
 ```
 
 ```ts
-// for multiple definitions
-service.defineMethods({
-    getItem: 'GET /items/:id'
+// for multiple aliases
+service.setAliases({
+    getItems: 'GET /items',
+    getItem: 'GET /items/:id',
+    setItem: 'POST /items/:id'
 });
+// all of these aliases should be defined in the schema,
+// like `'getItem'` in the schema definition above
 ```
 
 ### Initialization
@@ -97,44 +103,4 @@ const service = new RequestService<APISchema>(
     customRequestHandler, // optional
     customAPIMap // optional
 );
-```
-
-### Basic JSON request handler
-
-An example of a custom request handler passed to the `RequestService` constructor:
-
-```ts
-import type {Request, Response, RequestError} from 'reqsrv';
-
-async function fetchJSON({method, url}: Request): Promise<Response> {
-    // fits both the browser's `window.fetch` and the one imported
-    // from `node-fetch` in a Node environment
-    let response = await fetch(url, {method});
-    let {ok, status, statusText} = response;
-
-    if (!ok) {
-        throw new RequestError({
-            status,
-            statusText
-        });
-    }
-
-    try {
-        return {
-            ok,
-            status,
-            statusText,
-            body: await response.json()
-        };
-    }
-    catch (error) {
-        throw new RequestError({
-            status: 500,
-            statusText: 'Internal Server Error',
-            data: {
-                message: error.message
-            }
-        });
-    }
-}
 ```

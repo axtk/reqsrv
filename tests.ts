@@ -1,12 +1,12 @@
 import fetch from 'node-fetch';
 import {RequestService} from './src/RequestService';
 import {RequestError} from './src/RequestError';
-import type {CallbackRequest, Response, Schema} from './src/types';
+import type {RequestHandler, Schema} from './src/types';
 
 // https://en.wiktionary.org/w?search=test&fulltext=1
 type WiktionarySchema = Schema<{
     'GET /w': {
-        name: 'search',
+        alias: 'search',
         request: {
             query: {
                 search: string;
@@ -18,7 +18,7 @@ type WiktionarySchema = Schema<{
         };
     };
     'GET /:section': {
-        name: 'fetchSection',
+        alias: 'fetchSection',
         request: {
             params: {
                 section: 'w' | 'none';
@@ -34,9 +34,30 @@ type WiktionarySchema = Schema<{
     };
 }>;
 
-async function fetchText({method, url}: CallbackRequest): Promise<Response> {
-    let response = await fetch(url, {method});
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const fetchText: RequestHandler = async (endpoint, target, options) => {
+    let [method, path] = target.split(' ');
+
+    if (options.params) {
+        for (let [key, value] of Object.entries(options.params)) {
+            if (value !== null && value !== undefined)
+                path = path.replace(new RegExp(`:${escapeRegExp(key)}\\b`, 'g'), String(value));
+        }
+    }
+
+    let url = new URL(path, endpoint);
+
+    if (options.query) {
+        for (let [key, value] of Object.entries(options.query)) {
+            if (value !== null && value !== undefined)
+                url.searchParams.append(key, String(value));
+        }
+    }
+
+    let response = await fetch(url.href, {method});
     let {ok, status, statusText} = response;
+
     if (!ok) {
         throw new RequestError({
             status,
@@ -81,7 +102,7 @@ function toHTMLTitle(title: string) {
 
 (async () => {
 
-await test('RequestService(url, callback) + defineMethod()', async () => {
+await test('RequestService(url, handler) + setAlias()', async () => {
     const service = new RequestService<WiktionarySchema>(
         'https://en.wiktionary.org',
         fetchText,
@@ -93,7 +114,7 @@ await test('RequestService(url, callback) + defineMethod()', async () => {
     assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
-    service.defineMethod('search', 'GET /w');
+    service.setAlias('search', 'GET /w');
 
     let res2 = await service.api.search({
         query: {search: 'example', fulltext: 1},
@@ -102,7 +123,7 @@ await test('RequestService(url, callback) + defineMethod()', async () => {
     assert(res2.body.includes(toHTMLTitle('example')), 'api title');
 });
 
-await test('RequestService(url, callback) + defineMethods()', async () => {
+await test('RequestService(url, handler) + setAliases()', async () => {
     const service = new RequestService<WiktionarySchema>(
         'https://en.wiktionary.org',
         fetchText,
@@ -114,7 +135,7 @@ await test('RequestService(url, callback) + defineMethods()', async () => {
     assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
-    service.defineMethods({search: 'GET /w'});
+    service.setAliases({search: 'GET /w'});
 
     let res2 = await service.api.search({
         query: {search: 'example', fulltext: 1},
@@ -123,7 +144,7 @@ await test('RequestService(url, callback) + defineMethods()', async () => {
     assert(res2.body.includes(toHTMLTitle('example')), 'api title');
 });
 
-await test('RequestService(url, callback, apiMap)', async () => {
+await test('RequestService(url, handler, apiMap)', async () => {
     const service = new RequestService<WiktionarySchema>(
         'https://en.wiktionary.org',
         fetchText,
@@ -156,7 +177,7 @@ await test('url path params', async () => {
     assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body?.includes(toHTMLTitle('example')), 'send title');
 
-    service.defineMethod('fetchSection', 'GET /:section');
+    service.setAlias('fetchSection', 'GET /:section');
 
     let res2 = await service.api.fetchSection({
         params: {section: 'w'},
@@ -186,7 +207,7 @@ await test('code 404', async () => {
         }
     }
 
-    service.defineMethod('fetchSection', 'GET /:section');
+    service.setAlias('fetchSection', 'GET /:section');
 
     try {
         await service.api.fetchSection({

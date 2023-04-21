@@ -1,69 +1,43 @@
 import type {
-    HTTPMethod,
     Schema,
-    Callback,
     API,
-    APIMap,
-    APIMapEntry,
+    APITarget,
+    AliasMap,
+    AliasMapEntry,
     Request,
     Response,
+    RequestHandler,
 } from './types';
 
-/** @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions */
-const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 export class RequestService<S extends Schema> {
-    url: string;
-    callback: Callback | undefined;
+    endpoint: string;
+    handler: RequestHandler | undefined;
     api: API<S>;
 
-    constructor(url: string, callback?: Callback, apiMap?: Partial<APIMap<S>>) {
-        this.url = url;
-        this.callback = callback?.bind(this);
+    constructor(endpoint: string, handler?: RequestHandler, apiMap?: Partial<AliasMap<S>>) {
+        this.endpoint = endpoint;
+        this.handler = handler;
         this.api = {} as API<S>;
 
-        if (apiMap) this.defineMethods(apiMap);
+        if (apiMap) this.setAliases(apiMap);
     }
     async send<T extends keyof S>(
         target: T,
         options: Request<NonNullable<S[T]['request']>>,
     ): Promise<Response<NonNullable<S[T]['response']>>> {
-        if (!this.callback)
-            throw new Error('Missing request callback');
+        if (!this.handler)
+            throw new Error('Missing request handler');
 
-        let {method, url, params = {}, query = {}} = options;
-
-        if (/^[A-Z]+\s/.test(String(target)))
-            [method, url] = String(target).split(/\s+/) as [HTTPMethod, ...string[]];
-        else url = String(target);
-
-        for (let [key, value] of Object.entries(params)) {
-            if (value !== null && value !== undefined)
-                url = url.replace(new RegExp(`:${escapeRegExp(key)}\\b`, 'g'), String(value));
-        }
-
-        let urlObject = new URL(url, this.url);
-        for (let [key, value] of Object.entries(query)) {
-            if (value !== null && value !== undefined)
-                urlObject.searchParams.append(key, String(value));
-        }
-
-        return await this.callback({
-            ...options,
-            method,
-            url: urlObject.href,
-        }) as Response<NonNullable<S[T]['response']>>;
+        return this.handler(this.endpoint, target as APITarget, options as Request);
     }
-    setCallback(callback: Callback): void {
-        this.callback = callback;
+    setAlias<T extends keyof S>(methodName: NonNullable<S[T]['alias']>, target: T): void {
+        this.api[methodName] = this.send.bind(this, target) as API<S>[NonNullable<S[T]['alias']>];
     }
-    defineMethod<T extends keyof S>(methodName: NonNullable<S[T]['name']>, target: T): void {
-        // @ts-ignore: type checking bound generic functions doesn't work well
-        // @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-2.html#caveats
-        this.api[methodName] = this.send.bind(this, target);
+    setAliases(methodMap: Partial<AliasMap<S>>): void {
+        for (let [methodName, target] of Object.entries(methodMap) as Array<AliasMapEntry<S>>)
+            this.setAlias(methodName, target);
     }
-    defineMethods(methodMap: Partial<APIMap<S>>): void {
-        for (let [methodName, target] of Object.entries(methodMap) as Array<APIMapEntry<S>>)
-            this.defineMethod(methodName, target);
+    setHandler(handler: RequestHandler): void {
+        this.handler = handler;
     }
 }
