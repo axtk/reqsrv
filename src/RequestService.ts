@@ -1,9 +1,7 @@
 import type {
     Schema,
-    API,
     APITarget,
     AliasMap,
-    AliasMapEntry,
     Request,
     Response,
     RequestHandler,
@@ -12,14 +10,10 @@ import type {
 export class RequestService<S extends Schema> {
     endpoint: string;
     handler: RequestHandler | undefined;
-    api: API<S>;
 
-    constructor(endpoint: string, handler?: RequestHandler, apiMap?: Partial<AliasMap<S>>) {
+    constructor(endpoint: string, handler?: RequestHandler) {
         this.endpoint = endpoint;
         this.handler = handler;
-        this.api = {} as API<S>;
-
-        if (apiMap) this.setAliases(apiMap);
     }
     async send<T extends keyof S>(
         target: T,
@@ -30,14 +24,17 @@ export class RequestService<S extends Schema> {
 
         return this.handler(this.endpoint, target as APITarget, options as Request);
     }
-    setAlias<T extends keyof S>(methodName: NonNullable<S[T]['alias']>, target: T): void {
-        this.api[methodName] = this.send.bind(this, target) as API<S>[NonNullable<S[T]['alias']>];
-    }
-    setAliases(methodMap: Partial<AliasMap<S>>): void {
-        for (let [methodName, target] of Object.entries(methodMap) as Array<AliasMapEntry<S>>)
-            this.setAlias(methodName, target);
-    }
     setHandler(handler: RequestHandler): void {
         this.handler = handler;
+    }
+    assign<T extends AliasMap<S>>(aliasMap: T) {
+        let api: Record<string, unknown> = {};
+
+        for (let [methodName, target] of Object.entries(aliasMap))
+            api[methodName] = this.send.bind(this, target);
+
+        return api as {
+            [K in keyof T]: (options: Request<NonNullable<S[T[K]]['request']>>) => Promise<Response<NonNullable<S[T[K]]['response']>>>;
+        };
     }
 }

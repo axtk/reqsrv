@@ -55,41 +55,11 @@ export type RequestHandler = (endpoint: string, target: APITarget, options: Requ
 export type SchemaEntry = {
     request?: Request;
     response?: Response;
-    /**
-     * An optional alias allowing to define typed API methods as an
-     * alternative to API target keys.
-     * @example
-     * ```
-     * type CustomSchema = Schema<{
-     *     'GET /items': {
-     *         alias: 'getItems',
-     *         // request and response shapes
-     *     }
-     * }>;
-     *
-     * const service = new RequestService<CustomSchema>(url, fetchContent);
-     * // defining an alias to `service.send('GET /items', options);`:
-     * service.setAlias('getItems', 'GET /items');
-     * service.api.getItems(options);
-     */
-    alias?: string;
 };
 
 export type Schema<T extends Record<APITarget, SchemaEntry> = Record<APITarget, SchemaEntry>> = T;
 
-export type AliasMap<S extends Schema> = {
-    [T in keyof S as NonNullable<S[T]['alias']>]: T;
-};
-
-export type AliasMapEntry<S extends Schema> = [
-    NonNullable<S[keyof S]['alias']>,
-    keyof S,
-];
-
-export type API<S extends Schema> = {
-    [T in keyof S as NonNullable<S[T]['alias']>]:
-        (options: Request<NonNullable<S[T]['request']>>) => Promise<Response<NonNullable<S[T]['response']>>>
-};
+export type AliasMap<S extends Schema> = Record<string, keyof S>;
 
 export type RequestErrorOptions<T = unknown> = {
     status?: number;

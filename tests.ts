@@ -6,7 +6,6 @@ import type {RequestHandler, Schema} from './src/types';
 // https://en.wiktionary.org/w?search=test&fulltext=1
 type WiktionarySchema = Schema<{
     'GET /w': {
-        alias: 'search',
         request: {
             query: {
                 search: string;
@@ -18,7 +17,6 @@ type WiktionarySchema = Schema<{
         };
     };
     'GET /:section': {
-        alias: 'fetchSection',
         request: {
             params: {
                 section: 'w' | 'none';
@@ -34,9 +32,9 @@ type WiktionarySchema = Schema<{
     };
 }>;
 
-const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+let escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const fetchText: RequestHandler = async (endpoint, target, options) => {
+let fetchText: RequestHandler = async (endpoint, target, options) => {
     let [method, path] = target.split(' ');
 
     if (options.params) {
@@ -102,8 +100,8 @@ function toHTMLTitle(title: string) {
 
 (async () => {
 
-await test('RequestService(url, handler) + setAlias()', async () => {
-    const service = new RequestService<WiktionarySchema>(
+await test('RequestService(url, handler) + assign()', async () => {
+    let service = new RequestService<WiktionarySchema>(
         'https://en.wiktionary.org',
         fetchText,
     );
@@ -114,50 +112,9 @@ await test('RequestService(url, handler) + setAlias()', async () => {
     assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
-    service.setAlias('search', 'GET /w');
+    let api = service.assign({search: 'GET /w'});
 
-    let res2 = await service.api.search({
-        query: {search: 'example', fulltext: 1},
-    });
-    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
-    assert(res2.body.includes(toHTMLTitle('example')), 'api title');
-});
-
-await test('RequestService(url, handler) + setAliases()', async () => {
-    const service = new RequestService<WiktionarySchema>(
-        'https://en.wiktionary.org',
-        fetchText,
-    );
-
-    let res1 = await service.send('GET /w', {
-        query: {search: 'example', fulltext: 1},
-    });
-    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
-    assert(res1.body.includes(toHTMLTitle('example')), 'send title');
-
-    service.setAliases({search: 'GET /w'});
-
-    let res2 = await service.api.search({
-        query: {search: 'example', fulltext: 1},
-    });
-    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
-    assert(res2.body.includes(toHTMLTitle('example')), 'api title');
-});
-
-await test('RequestService(url, handler, apiMap)', async () => {
-    const service = new RequestService<WiktionarySchema>(
-        'https://en.wiktionary.org',
-        fetchText,
-        {search: 'GET /w'},
-    );
-
-    let res1 = await service.send('GET /w', {
-        query: {search: 'example', fulltext: 1},
-    });
-    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
-    assert(res1.body.includes(toHTMLTitle('example')), 'send title');
-
-    let res2 = await service.api.search({
+    let res2 = await api.search({
         query: {search: 'example', fulltext: 1},
     });
     assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
@@ -165,7 +122,7 @@ await test('RequestService(url, handler, apiMap)', async () => {
 });
 
 await test('url path params', async () => {
-    const service = new RequestService<WiktionarySchema>(
+    let service = new RequestService<WiktionarySchema>(
         'https://en.wiktionary.org',
         fetchText,
     );
@@ -177,9 +134,9 @@ await test('url path params', async () => {
     assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
     assert(res1.body?.includes(toHTMLTitle('example')), 'send title');
 
-    service.setAlias('fetchSection', 'GET /:section');
+    let api = service.assign({fetchSection: 'GET /:section'});
 
-    let res2 = await service.api.fetchSection({
+    let res2 = await api.fetchSection({
         params: {section: 'w'},
         query: {search: 'example', fulltext: 1},
     });
@@ -188,7 +145,7 @@ await test('url path params', async () => {
 });
 
 await test('code 404', async () => {
-    const service = new RequestService<WiktionarySchema>(
+    let service = new RequestService<WiktionarySchema>(
         'https://en.wiktionary.org',
         fetchText,
     );
@@ -207,10 +164,10 @@ await test('code 404', async () => {
         }
     }
 
-    service.setAlias('fetchSection', 'GET /:section');
+    let api = service.assign({fetchSection: 'GET /:section'});
 
     try {
-        await service.api.fetchSection({
+        await api.fetchSection({
             params: {section: 'none'},
             query: {search: 'nonsense'},
         });

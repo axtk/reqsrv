@@ -6,11 +6,12 @@
 - provides a common interface to handle API requests;
 - doesn't internally depend on a specific request utility, entrusting this opinionated part to the developer.
 
-## Example
+## Usage
 
 ```ts
 import {RequestService, Schema} from 'reqsrv';
 
+// `ServiceSchema` is a custom API schema defined below
 const service = new RequestService<ServiceSchema>(
     'https://api.example-service.com',
     // a custom request handler;
@@ -19,7 +20,9 @@ const service = new RequestService<ServiceSchema>(
     fetchContent
 );
 
-// `tsc` will make sure that the parameters match the API target
+// `tsc` will make sure that the options in the second parameter match
+// the API target specified in the first parameter according to
+// `ServiceSchema`
 let {ok, status, body} = await service.send('GET /items/:id', {
     params: {
         id: 10
@@ -52,7 +55,6 @@ type ServiceSchema = Schema<{
                 name?: string;
             };
         };
-        alias: 'getItem'; // optional
     };
     'POST /items/:id': {
         // ...
@@ -64,16 +66,19 @@ type ServiceSchema = Schema<{
 }>;
 ```
 
-### Aliases to API methods
+### Assigning custom method names to API targets
 
 ```ts
-// the aliases specified in the schema are expected to be used here
-// (and `tsc` will make sure there is no mismatch)
-service.setAlias('getItem', 'GET /items/:id');
+// mapping certain schema keys to new method names
+let api = service.assign({
+    getItems: 'GET /items',
+    getItem: 'GET /items/:id',
+    setItem: 'POST /items/:id'
+});
 
-// now, `service.send('GET /items/:id', options)` has another
+// now, `service.send('GET /items/:id', {...})` has another
 // equivalent form:
-let response = await service.api.getItem({
+let response = await api.getItem({
     params: {
         id: 10
     },
@@ -83,24 +88,20 @@ let response = await service.api.getItem({
 });
 ```
 
-```ts
-// for multiple aliases
-service.setAliases({
-    getItems: 'GET /items',
-    getItem: 'GET /items/:id',
-    setItem: 'POST /items/:id'
-});
-// all of these aliases should be defined in the schema,
-// like `'getItem'` in the schema definition above
-```
-
-### Initialization
+The `.assign()` method doesn't necessarily take all the API schema keys at once. They can be split into logical subsets and arranged in different namespaces:
 
 ```ts
-// see `src/RequestService.ts` for more specific types
-const service = new RequestService<APISchema>(
-    baseURL,
-    customRequestHandler, // optional
-    customAPIMap // optional
-);
+let api = {
+    users: service.assign({
+        getUsers: 'GET /users',
+        getUser: 'GET /users/:id',
+    }),
+    items: service.assign({
+        getItems: 'GET /items',
+        getItem: 'GET /items/:id',
+        setItem: 'POST /items/:id'
+    })
+};
+
+let firstUser = await api.users.getUser({params: {id: 1}});
 ```
