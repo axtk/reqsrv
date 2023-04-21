@@ -1,10 +1,10 @@
 # reqsrv
 
-*A lightweight zero-dependency container for typed web APIs*
+*Lightweight zero-dependency utilities for typing web APIs*
 
-- doesn't internally depend on a specific request utility, entrusting this opinionated part to the developer;
+- enables type checking of request handlers based on a custom API schema;
 - provides a common interface to handle API requests;
-- adds type checks to request handling based on a custom API schema.
+- doesn't internally depend on a specific request utility, entrusting this opinionated part to the developer.
 
 ## Example
 
