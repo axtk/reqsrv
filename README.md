@@ -114,7 +114,9 @@ Here's an example of a basic JSON request handler that can be passed to `Request
 ```ts
 import {RequestHandler, RequestError, getFetchOptions} from 'reqsrv';
 
-let fetchJSON: RequestHandler = async (endpoint, target, options) => {
+const endpoint = 'https://api.example.com';
+
+let fetchJSON: RequestHandler = async (target, options) => {
     let {url, method, headers} = getFetchOptions(endpoint, target, options);
 
     let response = await fetch(url, {
