@@ -8,21 +8,22 @@ import type {
 } from './types';
 
 export class RequestService<S extends Schema> {
-    endpoint: string;
     handler: RequestHandler | undefined;
 
-    constructor(endpoint: string, handler?: RequestHandler) {
-        this.endpoint = endpoint;
+    constructor(handler?: RequestHandler) {
         this.handler = handler;
     }
     async send<T extends keyof S>(
         target: T,
         options: Request<NonNullable<S[T]['request']>>,
-    ): Promise<Response<NonNullable<S[T]['response']>>> {
+    ) {
         if (!this.handler)
             throw new Error('Missing request handler');
 
-        return this.handler(this.endpoint, target as APITarget, options as Request);
+        return this.handler(
+            target as APITarget,
+            options as Request,
+        ) as Promise<Response<NonNullable<S[T]['response']>>>;
     }
     setHandler(handler: RequestHandler): void {
         this.handler = handler;

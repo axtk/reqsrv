@@ -33,7 +33,9 @@ type WiktionarySchema = Schema<{
     };
 }>;
 
-let fetchText: RequestHandler = async (endpoint, target, options) => {
+const endpoint = 'https://en.wiktionary.org';
+
+let fetchText: RequestHandler = async (target, options) => {
     let {url, method} = getFetchOptions(endpoint, target, options);
 
     let response = await fetch(url, {method});
@@ -84,10 +86,7 @@ function toHTMLTitle(title: string) {
 (async () => {
 
 await test('RequestService(url, handler) + assign()', async () => {
-    let service = new RequestService<WiktionarySchema>(
-        'https://en.wiktionary.org',
-        fetchText,
-    );
+    let service = new RequestService<WiktionarySchema>(fetchText);
 
     let res1 = await service.send('GET /w', {
         query: {search: 'example', fulltext: 1},
@@ -105,10 +104,10 @@ await test('RequestService(url, handler) + assign()', async () => {
 });
 
 await test('url path params', async () => {
-    let service = new RequestService<WiktionarySchema>(
-        'https://en.wiktionary.org',
-        fetchText,
-    );
+    let service = new RequestService<WiktionarySchema>();
+
+    // alternative to the constructor parameter
+    service.setHandler(fetchText);
 
     let res1 = await service.send('GET /:section', {
         params: {section: 'w'},
@@ -128,10 +127,7 @@ await test('url path params', async () => {
 });
 
 await test('code 404', async () => {
-    let service = new RequestService<WiktionarySchema>(
-        'https://en.wiktionary.org',
-        fetchText,
-    );
+    let service = new RequestService<WiktionarySchema>(fetchText);
 
     try {
         await service.send('GET /:section', {

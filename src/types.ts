@@ -50,7 +50,7 @@ export type ResponseShape = {
 export type Response<T extends ResponseShape = ResponseShape> =
     Extend<ResponseCore, Extend<T, ResponseShape>>;
 
-export type RequestHandler = (endpoint: string, target: APITarget, options: Request) => Promise<Response>;
+export type RequestHandler = (target: APITarget, options: Request) => Promise<Response>;
 
 export type SchemaEntry = {
     request?: Request;

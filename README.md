@@ -13,7 +13,6 @@ import {RequestService, Schema} from 'reqsrv';
 
 // `ServiceSchema` is a custom API schema defined below
 const service = new RequestService<ServiceSchema>(
-    'https://api.example-service.com',
     // a custom request handler;
     // it's likely (but not required) to contain `fetch`, `node-fetch`,
     // `axios`, `grpc-js`, logging, default headers, whatever necessary
@@ -108,7 +107,7 @@ let firstUser = await api.users.getUser({params: {id: 1}});
 
 ### Custom request handler
 
-As shown above, the `RequestService` constructor takes a custom request handler as a second parameter. Internal independence of `RequestService` from a fixed built-in request handler allows to handle requests of all sorts and environments (the browser or node) without locking in with a certain request library.
+As shown above, the `RequestService` constructor takes a custom request handler as a parameter. Internal independence of `RequestService` from a fixed built-in request handler allows to handle requests of all sorts and environments (the browser or node) without locking in with a certain request library.
 
 Here's an example of a basic JSON request handler that can be passed to `RequestService`:
 
