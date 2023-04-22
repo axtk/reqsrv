@@ -105,3 +105,50 @@ let api = {
 
 let firstUser = await api.users.getUser({params: {id: 1}});
 ```
+
+### Custom request handler
+
+As shown above, the `RequestService` constructor takes a custom request handler as a second parameter. Internal independence of `RequestService` from a fixed built-in request handler allows to handle requests of all sorts and environments (the browser or node) without locking in with a certain request library.
+
+Here's an example of a basic JSON request handler that can be passed to `RequestService`:
+
+```ts
+import {RequestHandler, RequestError, getFetchOptions} from 'reqsrv';
+
+let fetchJSON: RequestHandler = async (endpoint, target, options) => {
+    let {url, method, headers} = getFetchOptions(endpoint, target, options);
+
+    let response = await fetch(url, {
+        method,
+        headers,
+        body: options.body && JSON.stringify(options.body),
+    });
+
+    let {ok, status, statusText} = response;
+
+    if (!ok) {
+        throw new RequestError({
+            status,
+            statusText,
+        });
+    }
+
+    try {
+        return {
+            ok,
+            status,
+            statusText,
+            body: await response.json(),
+        };
+    }
+    catch (error) {
+        throw new RequestError({
+            status: 500,
+            statusText: 'Internal Server Error',
+            data: {
+                message: error instanceof Error ? error.message : '',
+            },
+        });
+    }
+}
+```
