@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import {RequestService} from './src/RequestService';
 import {RequestError} from './src/RequestError';
 import type {RequestHandler, Schema} from './src/types';
+import {getFetchOptions} from './src/getFetchOptions';
 
 // https://en.wiktionary.org/w?search=test&fulltext=1
 type WiktionarySchema = Schema<{
@@ -32,28 +33,10 @@ type WiktionarySchema = Schema<{
     };
 }>;
 
-let escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 let fetchText: RequestHandler = async (endpoint, target, options) => {
-    let [method, path] = target.split(' ');
+    let {url, method} = getFetchOptions(endpoint, target, options);
 
-    if (options.params) {
-        for (let [key, value] of Object.entries(options.params)) {
-            if (value !== null && value !== undefined)
-                path = path.replace(new RegExp(`:${escapeRegExp(key)}\\b`, 'g'), String(value));
-        }
-    }
-
-    let url = new URL(path, endpoint);
-
-    if (options.query) {
-        for (let [key, value] of Object.entries(options.query)) {
-            if (value !== null && value !== undefined)
-                url.searchParams.append(key, String(value));
-        }
-    }
-
-    let response = await fetch(url.href, {method});
+    let response = await fetch(url, {method});
     let {ok, status, statusText} = response;
 
     if (!ok) {
