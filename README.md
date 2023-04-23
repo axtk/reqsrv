@@ -153,5 +153,3 @@ let fetchJSON: RequestHandler = async (target, options) => {
     }
 }
 ```
-
-This example makes use of the `getFetchOptions()` utility that comes with the package to convert request handler parameters to `fetch()` parameters. This utility assumes that `target` follows the pattern of `${HTTPMethod} ${path}` with colon-prefixed path parameters like in `'GET /items/:id'` from the example above. It extracts the HTTP method and the path from `target`, fills out path parameters with the values from `options.params`, builds the full request URL based on the `endpoint` and the `path`, and appends query parameters from `options.query`. Although `target`s following this pattern can be convenient, it is not a requirement. `target` can be any unique string and can be handled otherwise.

@@ -18,6 +18,7 @@ export type RequestCore = {
     method?: string;
     service?: string;
     url?: string;
+    path?: string;
 };
 
 export type RequestShape = {

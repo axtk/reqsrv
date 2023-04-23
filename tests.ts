@@ -85,6 +85,46 @@ function toHTMLTitle(title: string) {
 
 (async () => {
 
+await test('getFetchOptions() + `${HTTPMethod} ${path}` target', async () => {
+    let endpoint = 'https://w.cc/x';
+    let target = 'GET /items/:id/:section';
+    let options = {
+        params: {
+            id: 12,
+            section: 'info',
+        },
+        query: {
+            q: 'test',
+        },
+    };
+
+    assert(equal(
+        getFetchOptions(endpoint, target, options),
+        {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+    ), 'getFetchOptions() result');
+});
+
+await test('getFetchOptions() + random target', async () => {
+    let endpoint = 'https://w.cc/x';
+    let target = Math.random().toString(36).slice(2);
+    let options = {
+        method: 'GET',
+        url: '/items/:id/:section',
+        params: {
+            id: 12,
+            section: 'info',
+        },
+        query: {
+            q: 'test',
+        },
+    };
+
+    assert(equal(
+        getFetchOptions(endpoint, target, options),
+        {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+    ), 'getFetchOptions() result');
+});
+
 await test('RequestService(url, handler) + assign()', async () => {
     let service = new RequestService<WiktionarySchema>(fetchText);
 
