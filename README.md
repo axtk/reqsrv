@@ -1,10 +1,12 @@
 # reqsrv
 
-*Lightweight zero-dependency utilities for typing web APIs*
+*Utilities for typing web APIs*
 
-- enables type checking of request handlers based on a custom API schema;
-- provides a common interface to handle API requests;
-- doesn't internally depend on a specific request utility, entrusting this opinionated part to the developer.
+## Features
+
+- type checking of request handlers based on a custom API schema;
+- a common interface to handle API requests;
+- no internal dependence on a specific request utility, entrusting this opinionated part to the developer.
 
 ## Usage
 
