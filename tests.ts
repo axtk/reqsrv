@@ -80,7 +80,7 @@ function equal(x: unknown, y: unknown) {
 }
 
 function toHTMLTitle(title: string) {
-    return `<title>Search results for "${title}" - Wiktionary</title>`;
+    return `<title>Search results for "${title}" - Wiktionary, the free dictionary</title>`;
 }
 
 (async () => {
