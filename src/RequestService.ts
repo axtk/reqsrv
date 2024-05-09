@@ -1,10 +1,10 @@
 import type {
-    Schema,
-    APITarget,
     AliasMap,
+    APITarget,
     Request,
-    Response,
     RequestHandler,
+    Response,
+    Schema,
 } from './types';
 
 export class RequestService<S extends Schema> {
@@ -13,7 +13,8 @@ export class RequestService<S extends Schema> {
     constructor(handler?: RequestHandler) {
         this.handler = handler;
     }
-    async send<T extends keyof S>(
+
+    send<T extends keyof S>(
         target: T,
         options: Request<NonNullable<S[T]['request']>>,
     ) {
@@ -25,9 +26,11 @@ export class RequestService<S extends Schema> {
             options as Request,
         ) as Promise<Response<NonNullable<S[T]['response']>>>;
     }
+
     setHandler(handler: RequestHandler): void {
         this.handler = handler;
     }
+
     assign<T extends AliasMap<S>>(aliasMap: T) {
         let api: Record<string, unknown> = {};
 
@@ -35,7 +38,9 @@ export class RequestService<S extends Schema> {
             api[methodName] = this.send.bind(this, target);
 
         return api as {
-            [K in keyof T]: (options: Request<NonNullable<S[T[K]]['request']>>) => Promise<Response<NonNullable<S[T[K]]['response']>>>;
+            [K in keyof T]: (
+                options: Request<NonNullable<S[T[K]]['request']>>,
+            ) => Promise<Response<NonNullable<S[T[K]]['response']>>>;
         };
     }
 }

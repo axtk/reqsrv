@@ -1,7 +1,7 @@
-import type {APITarget, Request, FetchOptions} from './types';
 import {escapeRegExp} from '../lib/excapeRegExp';
-import {toStringValueMap} from '../lib/toStringValueMap';
 import {isAbsoluteURL} from '../lib/isAbsoluteURL';
+import {toStringValueMap} from '../lib/toStringValueMap';
+import type {APITarget, FetchOptions, Request} from './types';
 
 /**
  * Transforms `RequestService` handler params to `fetch()` options.
@@ -38,7 +38,7 @@ export function getFetchOptions(
         if (url) {
             let path = urlObject.pathname;
 
-            if (path && !path.endsWith('/') && !/^[\?#\/]/.test(url))
+            if (path && !path.endsWith('/') && !/^[?#/]/.test(url))
                 path += '/';
 
             urlObject.pathname = path + url;

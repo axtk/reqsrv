@@ -1,7 +1,7 @@
 export const DEFAULT_REQUEST_ERROR_NAME = 'RequestError';
 export const DEFAULT_REQUEST_ERROR_MESSAGE = 'Unspecified';
 
-export class RequestError<T extends object = {}> extends Error {
+export class RequestError<T extends object = object> extends Error {
     data: T | undefined;
     status: number | undefined;
     statusText: string | undefined;

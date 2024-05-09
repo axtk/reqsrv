@@ -1,8 +1,8 @@
 import fetch from 'node-fetch';
-import {RequestService} from './src/RequestService';
-import {RequestError} from './src/RequestError';
-import type {RequestHandler, Schema} from './src/types';
 import {getFetchOptions} from './src/getFetchOptions';
+import {RequestError} from './src/RequestError';
+import {RequestService} from './src/RequestService';
+import type {RequestHandler, Schema} from './src/types';
 
 // https://en.wiktionary.org/w?search=test&fulltext=1
 type WiktionarySchema = Schema<{
@@ -47,6 +47,7 @@ let fetchText: RequestHandler = async (target, options) => {
             statusText,
         });
     }
+
     try {
         return {
             ok,
@@ -64,9 +65,9 @@ let fetchText: RequestHandler = async (target, options) => {
             },
         });
     }
-}
+};
 
-async function test(message: string, subject: () => Promise<void>) {
+async function test(message: string, subject: () => void | Promise<void>) {
     console.log(message);
     await subject();
 }
@@ -84,120 +85,124 @@ function toHTMLTitle(title: string) {
 }
 
 (async () => {
+    await test('getFetchOptions() + `${HTTPMethod} ${path}` target', () => {
+        let endpoint = 'https://w.cc/x';
+        let target = 'GET /items/:id/:section';
+        let options = {
+            params: {
+                id: 12,
+                section: 'info',
+            },
+            query: {
+                q: 'test',
+            },
+        };
 
-await test('getFetchOptions() + `${HTTPMethod} ${path}` target', async () => {
-    let endpoint = 'https://w.cc/x';
-    let target = 'GET /items/:id/:section';
-    let options = {
-        params: {
-            id: 12,
-            section: 'info',
-        },
-        query: {
-            q: 'test',
-        },
-    };
-
-    assert(equal(
-        getFetchOptions(endpoint, target, options),
-        {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
-    ), 'getFetchOptions() result');
-});
-
-await test('getFetchOptions() + random target', async () => {
-    let endpoint = 'https://w.cc/x';
-    let target = Math.random().toString(36).slice(2);
-    let options = {
-        method: 'GET',
-        url: '/items/:id/:section',
-        params: {
-            id: 12,
-            section: 'info',
-        },
-        query: {
-            q: 'test',
-        },
-    };
-
-    assert(equal(
-        getFetchOptions(endpoint, target, options),
-        {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
-    ), 'getFetchOptions() result');
-});
-
-await test('RequestService(url, handler) + assign()', async () => {
-    let service = new RequestService<WiktionarySchema>(fetchText);
-
-    let res1 = await service.send('GET /w', {
-        query: {search: 'example', fulltext: 1},
+        assert(equal(
+            getFetchOptions(endpoint, target, options),
+            {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+        ), 'getFetchOptions() result');
     });
-    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
-    assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
-    let api = service.assign({search: 'GET /w'});
+    await test('getFetchOptions() + random target', () => {
+        let endpoint = 'https://w.cc/x';
+        let target = Math.random().toString(36).slice(2);
+        let options = {
+            method: 'GET',
+            url: '/items/:id/:section',
+            params: {
+                id: 12,
+                section: 'info',
+            },
+            query: {
+                q: 'test',
+            },
+        };
 
-    let res2 = await api.search({
-        query: {search: 'example', fulltext: 1},
+        assert(equal(
+            getFetchOptions(endpoint, target, options),
+            {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+        ), 'getFetchOptions() result');
     });
-    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
-    assert(res2.body.includes(toHTMLTitle('example')), 'api title');
-});
 
-await test('url path params', async () => {
-    let service = new RequestService<WiktionarySchema>();
+    await test('RequestService(url, handler) + assign()', async () => {
+        let service = new RequestService<WiktionarySchema>(fetchText);
 
-    // alternative to the constructor parameter
-    service.setHandler(fetchText);
-
-    let res1 = await service.send('GET /:section', {
-        params: {section: 'w'},
-        query: {search: 'example', fulltext: 1},
-    });
-    assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
-    assert(res1.body?.includes(toHTMLTitle('example')), 'send title');
-
-    let api = service.assign({fetchSection: 'GET /:section'});
-
-    let res2 = await api.fetchSection({
-        params: {section: 'w'},
-        query: {search: 'example', fulltext: 1},
-    });
-    assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
-    assert(res2.body?.includes(toHTMLTitle('example')), 'api title');
-});
-
-await test('code 404', async () => {
-    let service = new RequestService<WiktionarySchema>(fetchText);
-
-    try {
-        await service.send('GET /:section', {
-            params: {section: 'none'},
-            query: {search: 'nonsense'},
+        let res1 = await service.send('GET /w', {
+            query: {search: 'example', fulltext: 1},
         });
-    }
-    catch (error) {
-        assert(error instanceof RequestError, 'send instanceof');
-        if (error instanceof RequestError) {
-            assert(equal([error.status, error.statusText], [404, 'Not Found']), 'send error');
-            assert(error.message === '404 Not Found', 'send error message');
-        }
-    }
 
-    let api = service.assign({fetchSection: 'GET /:section'});
+        assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
+        assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
-    try {
-        await api.fetchSection({
-            params: {section: 'none'},
-            query: {search: 'nonsense'},
+        let api = service.assign({search: 'GET /w'});
+
+        let res2 = await api.search({
+            query: {search: 'example', fulltext: 1},
         });
-    }
-    catch (error) {
-        assert(error instanceof RequestError, 'api instanceof');
-        if (error instanceof RequestError) {
-            assert(equal([error.status, error.statusText], [404, 'Not Found']), 'api error');
-            assert(error.message === '404 Not Found', 'api error message');
-        }
-    }
-});
 
+        assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
+        assert(res2.body.includes(toHTMLTitle('example')), 'api title');
+    });
+
+    await test('url path params', async () => {
+        let service = new RequestService<WiktionarySchema>();
+
+        // alternative to the constructor parameter
+        service.setHandler(fetchText);
+
+        let res1 = await service.send('GET /:section', {
+            params: {section: 'w'},
+            query: {search: 'example', fulltext: 1},
+        });
+
+        assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
+        assert(res1.body?.includes(toHTMLTitle('example')), 'send title');
+
+        let api = service.assign({fetchSection: 'GET /:section'});
+
+        let res2 = await api.fetchSection({
+            params: {section: 'w'},
+            query: {search: 'example', fulltext: 1},
+        });
+
+        assert(equal([res2.ok, res2.status, res2.statusText], [true, 200, 'OK']), 'api');
+        assert(res2.body?.includes(toHTMLTitle('example')), 'api title');
+    });
+
+    await test('code 404', async () => {
+        let service = new RequestService<WiktionarySchema>(fetchText);
+
+        try {
+            await service.send('GET /:section', {
+                params: {section: 'none'},
+                query: {search: 'nonsense'},
+            });
+        }
+        catch (error) {
+            assert(error instanceof RequestError, 'send instanceof');
+
+            if (error instanceof RequestError) {
+                assert(equal([error.status, error.statusText], [404, 'Not Found']), 'send error');
+                assert(error.message === '404 Not Found', 'send error message');
+            }
+        }
+
+        let api = service.assign({fetchSection: 'GET /:section'});
+
+        try {
+            await api.fetchSection({
+                params: {section: 'none'},
+                query: {search: 'nonsense'},
+            });
+        }
+        catch (error) {
+            assert(error instanceof RequestError, 'api instanceof');
+
+            if (error instanceof RequestError) {
+                assert(equal([error.status, error.statusText], [404, 'Not Found']), 'api error');
+                assert(error.message === '404 Not Found', 'api error message');
+            }
+        }
+    });
 })();
