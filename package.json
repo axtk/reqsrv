@@ -21,7 +21,8 @@
   "keywords": [
     "typed api",
     "schema",
-    "typed schema"
+    "typed schema",
+    "sdk"
   ],
   "author": "axtk",
   "license": "ISC",
