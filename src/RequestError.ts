@@ -1,38 +1,30 @@
 export const DEFAULT_REQUEST_ERROR_NAME = 'RequestError';
 export const DEFAULT_REQUEST_ERROR_MESSAGE = 'Unspecified';
 
-export class RequestError<T extends object = object> extends Error {
-    data: T | undefined;
-    status: number | undefined;
-    statusText: string | undefined;
+export type RequestErrorParams = {
+    name?: string;
+    message?: string;
+    status?: number;
+    statusText?: string;
+    data?: unknown;
+};
 
-    constructor(data: T) {
-        let name, message, status, statusText;
+export class RequestError<T extends RequestErrorParams = {}> extends Error {
+    data: RequestErrorParams['data'];
+    status: RequestErrorParams['status'];
+    statusText: RequestErrorParams['statusText'];
 
-        if (data) {
-            if ('status' in data)
-                status = Number(data.status);
-            if ('statusText' in data)
-                statusText = String(data.statusText);
-        }
+    constructor(params: T | void) {
+        let statusMessage = [params?.status, params?.statusText]
+            .filter(Boolean)
+            .join(' ');
 
-        if (data) {
-            if ('name' in data)
-                name = String(data.name);
-            if ('message' in data)
-                message = String(data.message);
-        }
+        super(params?.message || statusMessage || DEFAULT_REQUEST_ERROR_MESSAGE);
+        this.name = params?.name ?? DEFAULT_REQUEST_ERROR_NAME;
 
-        if (!message && (status !== undefined || statusText !== undefined))
-            message = [status, statusText].filter(Boolean).join(' ');
-
-        super(message ?? DEFAULT_REQUEST_ERROR_MESSAGE);
-
-        this.name = name ?? DEFAULT_REQUEST_ERROR_NAME;
-        this.data = data;
-
-        this.status = status;
-        this.statusText = statusText;
+        this.status = Number(params?.status ?? 0);
+        this.statusText = String(params?.statusText ?? '');
+        this.data = params?.data;
 
         // @see https://github.com/Microsoft/TypeScript-wiki/blob/main/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
         Object.setPrototypeOf(this, RequestError.prototype);
