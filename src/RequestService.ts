@@ -16,7 +16,7 @@ export class RequestService<S extends Schema> {
 
     send<T extends keyof S>(
         target: T,
-        options: Request<NonNullable<S[T]['request']>>,
+        options?: Request<NonNullable<S[T]['request']>>,
     ) {
         if (!this.handler)
             throw new Error('Missing request handler');
@@ -42,7 +42,7 @@ export class RequestService<S extends Schema> {
 
         return api as {
             [K in keyof T]: (
-                options: Request<NonNullable<S[T[K]]['request']>>,
+                options: Request<NonNullable<S[T[K]]['request']>> | void,
             ) => Promise<Response<NonNullable<S[T[K]]['response']>>>;
         };
     }
