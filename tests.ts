@@ -148,7 +148,7 @@ function toHTMLTitle(title: string) {
         let service = new RequestService<WiktionarySchema>();
 
         // alternative to the constructor parameter
-        service.setHandler(fetchText);
+        service.use(fetchText);
 
         let res1 = await service.send('GET /:section', {
             params: {section: 'w'},

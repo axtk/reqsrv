@@ -27,7 +27,10 @@ export class RequestService<S extends Schema> {
         ) as Promise<Response<NonNullable<S[T]['response']>>>;
     }
 
-    setHandler(handler: RequestHandler): void {
+    /**
+     * Sets the request handler.
+     */
+    use(handler: RequestHandler): void {
         this.handler = handler;
     }
 
