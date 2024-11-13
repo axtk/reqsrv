@@ -1,6 +1,6 @@
 import {escapeRegExp} from '../lib/excapeRegExp';
 import {isAbsoluteURL} from '../lib/isAbsoluteURL';
-import {toStringValueMap} from '../lib/toStringValueMap';
+import {toStringValueMap} from './toStringValueMap';
 import type {APITarget, FetchOptions, Request} from './types';
 
 /**
