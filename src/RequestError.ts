@@ -1,10 +1,6 @@
 export const DEFAULT_REQUEST_ERROR_NAME = 'RequestError';
 export const DEFAULT_REQUEST_ERROR_MESSAGE = 'Unspecified';
 
-function getProp<T>(x: object | void | undefined, prop: string): T | undefined {
-    return x && (prop in x) ? x[prop as keyof typeof x] as T : undefined;
-}
-
 export type RequestErrorParams = {
     name?: string;
     message?: string;
@@ -13,22 +9,39 @@ export type RequestErrorParams = {
     data?: unknown;
 };
 
-export class RequestError<T extends RequestErrorParams = {}> extends Error {
+function getProp<K extends keyof RequestErrorParams>(
+    x: unknown,
+    key: K,
+) {
+    if (!x || typeof x !== 'object' || !(key in x))
+        return undefined;
+    return x[key as keyof typeof x] as RequestErrorParams[K];
+}
+
+export class RequestError extends Error {
     data: RequestErrorParams['data'];
     status: RequestErrorParams['status'];
     statusText: RequestErrorParams['statusText'];
 
-    constructor(params: T | Error | void) {
-        let status = getProp(params, 'status');
-        let statusText = getProp(params, 'statusText');
-        let statusMessage = [status, statusText].filter(Boolean).join(' ');
+    constructor(options: unknown) {
+        let props: RequestErrorParams = {
+            status: getProp(options, 'status'),
+            statusText: getProp(options, 'statusText'),
+            message: getProp(options, 'message'),
+            name: getProp(options, 'name'),
+            data: getProp(options, 'data'),
+        };
 
-        super(params?.message || statusMessage || DEFAULT_REQUEST_ERROR_MESSAGE);
-        this.name = params?.name ?? DEFAULT_REQUEST_ERROR_NAME;
+        let statusMessage = [props.status, props.statusText]
+            .filter(Boolean)
+            .join(' ');
 
-        this.status = Number(status ?? 0);
-        this.statusText = String(statusText ?? '');
-        this.data = getProp(params, 'data');
+        super(props.message || statusMessage || DEFAULT_REQUEST_ERROR_MESSAGE);
+        this.name = props.name ?? DEFAULT_REQUEST_ERROR_NAME;
+
+        this.status = Number(props.status ?? 0);
+        this.statusText = String(props.statusText ?? '');
+        this.data = props.data;
 
         // @see https://github.com/Microsoft/TypeScript-wiki/blob/main/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
         Object.setPrototypeOf(this, RequestError.prototype);
