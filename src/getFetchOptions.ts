@@ -38,10 +38,16 @@ export function getFetchOptions(
         if (url) {
             let path = urlObject.pathname;
 
-            if (path && !path.endsWith('/') && !/^[?#/]/.test(url))
-                path += '/';
+            if (!path)
+                urlObject.pathname = url;
 
-            urlObject.pathname = path + url;
+            if (path.endsWith('/'))
+                path = path.slice(0, -1);
+
+            if (url.startsWith('/'))
+                url = url.slice(1);
+
+            urlObject.pathname = path + '/' + url;
         }
     }
 
