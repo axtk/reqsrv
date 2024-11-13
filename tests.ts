@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import {getFetchOptions} from './src/getFetchOptions';
 import {RequestError} from './src/RequestError';
 import {RequestService} from './src/RequestService';
