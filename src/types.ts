@@ -68,17 +68,6 @@ export type RequestErrorOptions<T = unknown> = {
     data?: T;
 };
 
-export type HTTPMethod =
-    | 'GET'
-    | 'POST'
-    | 'PATCH'
-    | 'PUT'
-    | 'DELETE'
-    | 'OPTIONS'
-    | 'HEAD'
-    | 'TRACE'
-    | 'CONNECT';
-
 export type FetchOptions = {
     method?: string;
     url: string;
