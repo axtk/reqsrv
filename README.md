@@ -13,18 +13,20 @@
 ```ts
 import {RequestService, Schema} from 'reqsrv';
 
-// `ServiceSchema` is a custom API schema defined below
+// `ServiceSchema` is a custom API schema (an example is shown below)
 const service = new RequestService<ServiceSchema>(
     // a custom request handler;
-    // it's likely (but not required) to contain `fetch`, `node-fetch`,
-    // `axios`, `grpc-js`, logging, default headers, whatever necessary
+    // it's not baked into the package, since it can vary in many ways
+    // depending on the purpose and environment of the application
+    // (it might make use of `fetch`, `node-fetch`, `axios`, `grpc-js`,
+    // logging, default headers, and whatever necessary)
     fetchContent
 );
 
-// `tsc` will make sure that the options in the second parameter match
-// the API target specified in the first parameter according to
-// `ServiceSchema`
 let {ok, status, body} = await service.send('GET /items/:id', {
+    // these options are validated as `ServiceSchema['GET /items/:id']`
+    // (based on the schema type passed to the `RequestService`
+    // constructor and the first parameter passed to `send()`)
     params: {
         id: 10
     },
@@ -34,7 +36,7 @@ let {ok, status, body} = await service.send('GET /items/:id', {
 });
 
 // wrapping into the `Schema` generic type is optional, but
-// this helps validate the schema structure by means of `tsc`
+// this helps validate the basic schema structure
 type ServiceSchema = Schema<{
     // a schema key can be any unique string, for an HTTP API
     // a pair of a method and a path can serve this purpose
@@ -46,7 +48,6 @@ type ServiceSchema = Schema<{
                 id: number;
             };
             query?: {
-                /** @defaultValue 'compact' */
                 mode?: 'compact' | 'full';
             };
         };
@@ -69,16 +70,19 @@ type ServiceSchema = Schema<{
 
 ### Assigning custom method names to API targets
 
+Schema keys can be mapped to new methods:
+
 ```ts
-// mapping certain schema keys to new method names
 let api = service.assign({
     getItems: 'GET /items',
     getItem: 'GET /items/:id',
     setItem: 'POST /items/:id'
 });
+```
 
-// now, `service.send('GET /items/:id', {...})` has another
-// equivalent form:
+With such a mapping in place, `service.send('GET /items/:id', {...})` has another equivalent form:
+
+```ts
 let response = await api.getItem({
     params: {
         id: 10
@@ -89,22 +93,23 @@ let response = await api.getItem({
 });
 ```
 
-The `.assign()` method doesn't necessarily take all the API schema keys at once. They can be split into logical subsets and arranged in different namespaces:
+The `.assign()` method doesn't have to take all the API schema keys at once. The API methods can be split into logical subsets and arranged in different namespaces:
 
 ```ts
 let api = {
     users: service.assign({
-        getUsers: 'GET /users',
-        getUser: 'GET /users/:id',
+        getList: 'GET /users',
+        getInfo: 'GET /users/:id',
     }),
     items: service.assign({
-        getItems: 'GET /items',
-        getItem: 'GET /items/:id',
-        setItem: 'POST /items/:id'
+        getList: 'GET /items',
+        getInfo: 'GET /items/:id',
+        setInfo: 'POST /items/:id',
     })
 };
 
-let firstUser = await api.users.getUser({params: {id: 1}});
+let userList = await api.users.getList();
+let firstUser = await api.users.getInfo({params: {id: userList[0].id}});
 ```
 
 ### Custom request handler
