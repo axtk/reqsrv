@@ -5,11 +5,11 @@ export type Extend<T, X> = T & Omit<X, keyof T>;
  * is passed to the custom request handler that matches the target to
  * the request.
  *
- * An HTTP API target can be represented by the following template:
- * '${HTTPMethod} ${path}'. The path can contain colon-prefixed parameters
- * that will be filled in from the request's `params`.
+ * For the sake of convenience (but not necessarily), a target string of
+ * an HTTP API can be '${HTTPMethod} ${path}'. Here, the path can contain
+ * colon-prefixed parameters corresponding to the request's `params` keys.
  *
- * @example (HTTP API) 'GET /', 'POST /item', 'GET /item/:id', etc.
+ * @example (HTTP API) `'GET /'`, `'POST /item'`, `'GET /item/:id'`, etc.
  */
 export type APITarget = string;
 
