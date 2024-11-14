@@ -52,6 +52,12 @@ export type RequestHandler = (
     options: RequestSchema,
 ) => Promise<ResponseSchema>;
 
+export type ResponseShape<T extends ResponseSchema | undefined> =
+    T extends undefined
+        ? Omit<ResponseSchema, 'body'>
+        // adding response properties not explicitly defined by the schema
+        : T & Omit<ResponseSchema, keyof T | 'body'>;
+
 export type FetchOptions = {
     method?: string;
     url: string;

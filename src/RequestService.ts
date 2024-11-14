@@ -3,6 +3,7 @@ import type {
     APITarget,
     RequestHandler,
     RequestSchema,
+    ResponseShape,
     Schema,
 } from './types';
 
@@ -28,7 +29,10 @@ export class RequestService<S extends Schema> {
         if (!this.handler)
             throw new Error('Missing request handler');
 
-        return this.handler(target as APITarget, options!) as Promise<S[T]['response']>;
+        return this.handler(
+            target as APITarget,
+            options!,
+        ) as Promise<ResponseShape<S[T]['response']>>;
     }
 
     /**
@@ -64,7 +68,9 @@ export class RequestService<S extends Schema> {
             };
 
         return api as {
-            [K in keyof T]: (options: S[T[K]]['request']) => Promise<S[T[K]]['response']>;
+            [K in keyof T]: (
+                options: S[T[K]]['request'],
+            ) => Promise<ResponseShape<S[T[K]]['response']>>;
         };
     }
 
@@ -111,7 +117,7 @@ export class RequestService<S extends Schema> {
                 options: S[T[K]]['request'] extends void
                     ? void
                     : Exclude<S[T[K]]['request'], void>['query'],
-            ) => Promise<S[T[K]]['response']>;
+            ) => Promise<ResponseShape<S[T[K]]['response']>>;
         };
     }
 }
