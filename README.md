@@ -112,6 +112,8 @@ let userList = await api.users.getList();
 let firstUser = await api.users.getInfo({params: {id: userList[0].id}});
 ```
 
+For API methods controlled only with query parameters, there is also a shorthand option: the `.assignQuery()` method, returning aliases accepting only query parameters, without the need to nest them into the `query` key.
+
 ### Custom request handler
 
 As shown above, the `RequestService` constructor takes a custom request handler as a parameter. Internal independence of `RequestService` from a fixed built-in request handler allows to handle requests of all sorts and environments (the browser or node) without locking in with a certain request library.
@@ -125,11 +127,12 @@ const endpoint = 'https://api.example.com';
 
 let fetchJSON: RequestHandler = async (target, options) => {
     let {url, method, headers} = getFetchOptions(endpoint, target, options);
+    let body = options?.body;
 
     let response = await fetch(url, {
         method,
         headers,
-        body: options.body && JSON.stringify(options.body),
+        body: body ? JSON.stringify(body) : null,
     });
 
     let {ok, status, statusText} = response;
@@ -150,13 +153,7 @@ let fetchJSON: RequestHandler = async (target, options) => {
         };
     }
     catch (error) {
-        throw new RequestError({
-            status: 500,
-            statusText: 'Internal Server Error',
-            data: {
-                message: error instanceof Error ? error.message : '',
-            },
-        });
+        throw new RequestError(error);
     }
 }
 ```
