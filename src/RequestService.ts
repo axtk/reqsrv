@@ -67,4 +67,51 @@ export class RequestService<S extends Schema> {
             [K in keyof T]: (options: S[T[K]]['request']) => Promise<S[T[K]]['response']>;
         };
     }
+
+    /**
+     * Similar to `.assign()`, with the returned aliases accepting
+     * only the query part of the request schema.
+     *
+     * This is a shorthand option for API methods fully controlled by
+     * query parameters.
+     *
+     * @example
+     * ```
+     * let api = service.assign({
+     *     getItem: 'GET /item',
+     * });
+     * api.getItem({
+     *     query: {id: 1},
+     * });
+     * ```
+     *
+     * This is equivalent to:
+     *
+     * ```
+     * let api = service.assignQuery({
+     *     getItem: 'GET /item',
+     * });
+     * api.getItem({id: 1});
+     * ```
+     *
+     * With the latter code, there is no need to nest the request
+     * options into the `query` key, which might seem redundant for
+     * API methods controlled only with query parameters.
+     */
+    assignQuery<T extends AliasMap<S>>(aliasMap: T) {
+        let api: Record<string, unknown> = {};
+
+        for (let [methodName, target] of Object.entries(aliasMap))
+            api[methodName] = (query: Exclude<RequestSchema, void>['query']) => {
+                return this.send(target, {query});
+            };
+
+        return api as {
+            [K in keyof T]: (
+                options: S[T[K]]['request'] extends void
+                    ? void
+                    : Exclude<S[T[K]]['request'], void>['query'],
+            ) => Promise<S[T[K]]['response']>;
+        };
+    }
 }
