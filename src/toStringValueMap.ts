@@ -1,5 +1,5 @@
 export function toStringValueMap(
-    map: Record<string, unknown> | undefined,
+    map: Record<string, unknown> | void | undefined,
 ): Record<string, string> | undefined {
     if (!map)
         return;

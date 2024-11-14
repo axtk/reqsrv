@@ -1,13 +1,7 @@
+import {RequestErrorParams} from './types';
+
 export const DEFAULT_REQUEST_ERROR_NAME = 'RequestError';
 export const DEFAULT_REQUEST_ERROR_MESSAGE = 'Unspecified';
-
-export type RequestErrorParams = {
-    name?: string;
-    message?: string;
-    status?: number;
-    statusText?: string;
-    data?: unknown;
-};
 
 function getProp<K extends keyof RequestErrorParams>(
     x: unknown,

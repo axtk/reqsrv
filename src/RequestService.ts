@@ -1,9 +1,8 @@
 import type {
     AliasMap,
     APITarget,
-    Request,
     RequestHandler,
-    Response,
+    RequestSchema,
     Schema,
 } from './types';
 
@@ -16,15 +15,12 @@ export class RequestService<S extends Schema> {
 
     send<T extends keyof S>(
         target: T,
-        options?: Request<NonNullable<S[T]['request']>>,
+        options: S[T]['request'],
     ) {
         if (!this.handler)
             throw new Error('Missing request handler');
 
-        return this.handler(
-            target as APITarget,
-            options as Request,
-        ) as Promise<Response<NonNullable<S[T]['response']>>>;
+        return this.handler(target as APITarget, options!) as Promise<S[T]['response']>;
     }
 
     /**
@@ -38,12 +34,12 @@ export class RequestService<S extends Schema> {
         let api: Record<string, unknown> = {};
 
         for (let [methodName, target] of Object.entries(aliasMap))
-            api[methodName] = this.send.bind(this, target);
+            api[methodName] = (options: RequestSchema) => {
+                return this.send(target, options);
+            };
 
         return api as {
-            [K in keyof T]: (
-                options: Request<NonNullable<S[T[K]]['request']>> | void,
-            ) => Promise<Response<NonNullable<S[T[K]]['response']>>>;
+            [K in keyof T]: (options: S[T[K]]['request']) => Promise<S[T[K]]['response']>;
         };
     }
 }

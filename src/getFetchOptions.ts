@@ -1,7 +1,7 @@
 import {escapeRegExp} from '../lib/excapeRegExp';
 import {isAbsoluteURL} from '../lib/isAbsoluteURL';
 import {toStringValueMap} from './toStringValueMap';
-import type {APITarget, FetchOptions, Request} from './types';
+import type {APITarget, FetchOptions, RequestSchema} from './types';
 
 /**
  * Transforms `RequestService` handler params to `fetch()` options.
@@ -13,18 +13,24 @@ import type {APITarget, FetchOptions, Request} from './types';
 export function getFetchOptions(
     endpoint: string,
     target: APITarget,
-    options: Request = {},
+    options: RequestSchema,
 ): FetchOptions {
     // parsing `target` if it matches the pattern of `${HTTPMethod} ${path}`
     let [targetMethod, targetPath] = /^[A-Z]+\s/.test(target) ? target.split(/\s+/) : [];
 
-    let method = options.method ?? targetMethod;
-    let url = options.url ?? options.path ?? targetPath;
+    let method = options?.method ?? targetMethod;
+    let url = options?.url ?? options?.path ?? targetPath;
 
-    if (url && options.params) {
-        for (let [key, value] of Object.entries(options.params)) {
+    let params = options?.params;
+    let query = options?.query;
+
+    if (url && params) {
+        for (let [key, value] of Object.entries(params)) {
             if (value !== null && value !== undefined)
-                url = url.replace(new RegExp(`:${escapeRegExp(key)}\\b`, 'g'), String(value));
+                url = url.replace(
+                    new RegExp(`:${escapeRegExp(key)}\\b`, 'g'),
+                    String(value),
+                );
         }
     }
 
@@ -51,8 +57,8 @@ export function getFetchOptions(
         }
     }
 
-    if (options.query) {
-        for (let [key, value] of Object.entries(options.query)) {
+    if (query) {
+        for (let [key, value] of Object.entries(query)) {
             if (value !== null && value !== undefined)
                 urlObject.searchParams.append(key, String(value));
         }
@@ -61,6 +67,6 @@ export function getFetchOptions(
     return {
         method,
         url: urlObject.href,
-        headers: toStringValueMap(options.headers),
+        headers: toStringValueMap(options?.headers),
     };
 }
