@@ -9,10 +9,18 @@ import type {
 export class RequestService<S extends Schema> {
     handler: RequestHandler | undefined;
 
+    /**
+     * Accepts a request handler as a parameter, which might be
+     * highly dependent on particular use-cases and the environment.
+     */
     constructor(handler?: RequestHandler) {
         this.handler = handler;
     }
 
+    /**
+     * Sends a request to the `target` specified in the
+     * `RequestService`'s schema.
+     */
     send<T extends keyof S>(
         target: T,
         options: S[T]['request'],
@@ -30,6 +38,23 @@ export class RequestService<S extends Schema> {
         this.handler = handler;
     }
 
+    /**
+     * Returns a map of aliases to the schema methods.
+     *
+     * @example
+     * ```
+     * let service = new RequestService<CustomSchema>(handler);
+     * let api = service.assign({
+     *     getItem: 'GET /items/:id',
+     * });
+     *
+     * service.send('GET /items/:id', {
+     *     params: {id: 1},
+     * });
+     * // the above call is now equivalent to:
+     * api.getItem({params: {id: 1}});
+     * ```
+     */
     assign<T extends AliasMap<S>>(aliasMap: T) {
         let api: Record<string, unknown> = {};
 
