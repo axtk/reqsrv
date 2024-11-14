@@ -56,13 +56,7 @@ let fetchText: RequestHandler = async (target, options) => {
         };
     }
     catch (error) {
-        throw new RequestError({
-            status: 500,
-            statusText: 'Internal Server Error',
-            data: {
-                message: error instanceof Error ? error.message : '',
-            },
-        });
+        throw new RequestError(error);
     }
 };
 
