@@ -4,40 +4,43 @@
 
 ## Features
 
-- type checking of request handlers based on a custom API schema;
-- a common interface to handle API requests;
-- no internal dependence on a specific request utility, entrusting this opinionated part to the developer.
+- type-safe request handlers based on a custom API schema;
+- common environment-agnostic interface for handling API requests;
+- no internal dependence on a specific request utility.
 
 ## Usage
 
+The `RequestService` class helps create a type-safe entrypoint to an API:
+
 ```ts
-import {RequestService, Schema} from 'reqsrv';
+import {RequestService} from 'reqsrv';
 
-// `ServiceSchema` is a custom API schema (an example is shown below)
-const service = new RequestService<ServiceSchema>(
-    // a custom request handler;
-    // it's not baked into the package, since it can vary in many ways
-    // depending on the purpose and environment of the application
-    // (it might make use of `fetch`, `node-fetch`, `axios`, `grpc-js`,
-    // logging, default headers, and whatever necessary)
-    fetchContent
-);
+let service = new RequestService<CustomSchema>(fetchContent);
+```
 
+The constructor accepts a custom request handler `fetchContent`. It's not predefined by the package, since it can vary in many ways depending on the purpose and environment of the application (it might make use of `fetch`, `node-fetch`, `axios`, `grpc-js`, logging, default headers, or whatever necessary).
+
+The `CustomSchema` type used with the constructor is a custom schema outlining the types of requests and responses within an API, see the example below of what such a schema may look like.
+
+```ts
 let {ok, status, body} = await service.send('GET /items/:id', {
-    // these options are validated as `ServiceSchema['GET /items/:id']`
-    // (based on the schema type passed to the `RequestService`
-    // constructor and the first parameter passed to `send()`)
     params: {
         id: 10
     },
     query: {
         mode: 'full'
-    }
+    },
 });
+```
+
+The options passed as the second parameter to `send()` are validated as `CustomSchema['GET /items/:id']` (based on the schema type passed to the `RequestService` constructor and the first parameter passed to `send()`).
+
+```ts
+import type {Schema} from 'reqsrv';
 
 // wrapping into the `Schema` generic type is optional, but
 // this helps validate the basic schema structure
-type ServiceSchema = Schema<{
+type CustomSchema = Schema<{
     // a schema key can be any unique string, for an HTTP API
     // a pair of a method and a path can serve this purpose
     'GET /items/:id': {
@@ -76,7 +79,7 @@ Schema keys can be mapped to new methods:
 let api = service.assign({
     getItems: 'GET /items',
     getItem: 'GET /items/:id',
-    setItem: 'POST /items/:id'
+    setItem: 'POST /items/:id',
 });
 ```
 
@@ -85,15 +88,15 @@ With such a mapping in place, `service.send('GET /items/:id', {...})` has anothe
 ```ts
 let response = await api.getItem({
     params: {
-        id: 10
+        id: 10,
     },
     query: {
-        mode: 'full'
-    }
+        mode: 'full',
+    },
 });
 ```
 
-The `.assign()` method doesn't have to take all the API schema keys at once. The API methods can be split into logical subsets and arranged in different namespaces:
+The `assign()` method doesn't have to take all the API schema keys at once. The API methods can be split into logical subsets and arranged in different namespaces:
 
 ```ts
 let api = {
@@ -105,14 +108,14 @@ let api = {
         getList: 'GET /items',
         getInfo: 'GET /items/:id',
         setInfo: 'POST /items/:id',
-    })
+    }),
 };
 
 let userList = await api.users.getList();
 let firstUser = await api.users.getInfo({params: {id: userList[0].id}});
 ```
 
-For API methods controlled only with query parameters, there is also a shorthand option: the `.assignQuery()` method, returning aliases accepting only query parameters, without the need to nest them into the `query` key.
+For API methods controlled only with query parameters, there is also a shorthand option: the `assignQuery()` method, returning aliases accepting only query parameters, without the need to nest them into the `query` key.
 
 ### Custom request handler
 
@@ -157,3 +160,5 @@ let fetchJSON: RequestHandler = async (target, options) => {
     }
 }
 ```
+
+To meet the needs of a specific use-case, the request handler's code can certainly depart from the example above (which is again the reason why it's not hardwired into the package).
