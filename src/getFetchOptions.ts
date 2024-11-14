@@ -68,5 +68,6 @@ export function getFetchOptions(
         method,
         url: urlObject.href,
         headers: toStringValueMap(options?.headers),
+        body: options?.body,
     };
 }
