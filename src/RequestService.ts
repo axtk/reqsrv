@@ -12,7 +12,7 @@ export class RequestService<S extends Schema> {
 
     /**
      * Accepts a request handler as a parameter, which might be
-     * highly dependent on particular use-cases and the environment.
+     * highly dependent on particular use cases and the environment.
      */
     constructor(handler?: RequestHandler) {
         this.handler = handler;

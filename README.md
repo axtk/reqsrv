@@ -161,4 +161,4 @@ let fetchJSON: RequestHandler = async (target, options) => {
 }
 ```
 
-To meet the needs of a specific use-case, the request handler's code can certainly depart from the example above (which is again the reason why it's not hardwired into the package).
+To meet the needs of a specific use case, the request handler's code can certainly depart from the example above (which is again the reason why it's not hardwired into the package).
