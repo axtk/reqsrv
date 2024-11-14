@@ -4,7 +4,8 @@ import {toStringValueMap} from './toStringValueMap';
 import type {APITarget, FetchOptions, RequestSchema} from './types';
 
 /**
- * Transforms `RequestService` handler params to `fetch()` options.
+ * Transforms `RequestService` handler params to `fetch()` params and
+ * returns the pair `[url, fetchOptions]`.
  *
  * It's assumed that the `target` parameter matches the pattern
  * `${HTTPMethod} ${path}` and may contain colon-prefixed placeholder
@@ -14,7 +15,7 @@ export function getFetchOptions(
     endpoint: string,
     target: APITarget,
     options: RequestSchema,
-): FetchOptions {
+): [string, FetchOptions] {
     // parsing `target` if it matches the pattern of `${HTTPMethod} ${path}`
     let [targetMethod, targetPath] = /^[A-Z]+\s/.test(target) ? target.split(/\s+/) : [];
 
@@ -64,10 +65,11 @@ export function getFetchOptions(
         }
     }
 
-    return {
+    let fetchOptions: FetchOptions = {
         method,
-        url: urlObject.href,
         headers: toStringValueMap(options?.headers),
         body: options?.body,
     };
+
+    return [urlObject.href, fetchOptions];
 }

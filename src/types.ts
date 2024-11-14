@@ -62,7 +62,6 @@ type RequestInitPolyfill = NonNullable<Parameters<typeof fetch>[1]>;
 
 export type FetchOptions =
     Omit<RequestInitPolyfill, 'headers' | 'body'> & {
-        url: string;
         headers?: Record<string, string>;
         body?: unknown;
     };

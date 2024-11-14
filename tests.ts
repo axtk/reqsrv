@@ -35,7 +35,7 @@ type WiktionarySchema = Schema<{
 const endpoint = 'https://en.wiktionary.org';
 
 let fetchText: RequestHandler = async (target, options) => {
-    let {url, method} = getFetchOptions(endpoint, target, options);
+    let [url, {method}] = getFetchOptions(endpoint, target, options);
 
     let response = await fetch(url, {method});
     let {ok, status, statusText} = response;
