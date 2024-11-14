@@ -1,4 +1,4 @@
-import {getFetchOptions} from './src/getFetchOptions';
+import {extendOptions} from './src/extendOptions';
 import {RequestError} from './src/RequestError';
 import {RequestService} from './src/RequestService';
 import type {RequestHandler, Schema} from './src/types';
@@ -35,7 +35,7 @@ type WiktionarySchema = Schema<{
 const endpoint = 'https://en.wiktionary.org';
 
 let fetchText: RequestHandler = async (target, options) => {
-    let [url, {method}] = getFetchOptions(endpoint, target, options);
+    let {method, url} = extendOptions(options, {endpoint, target});
 
     let response = await fetch(url, {method});
     let {ok, status, statusText} = response;
@@ -78,7 +78,7 @@ function toHTMLTitle(title: string) {
 }
 
 (async () => {
-    await test('getFetchOptions() + `${HTTPMethod} ${path}` target', () => {
+    await test('extendOptions() + `${HTTPMethod} ${path}` target', () => {
         let endpoint = 'https://w.cc/x';
         let target = 'GET /items/:id/:section';
         let options = {
@@ -92,12 +92,12 @@ function toHTMLTitle(title: string) {
         };
 
         assert(equal(
-            getFetchOptions(endpoint, target, options),
-            ['https://w.cc/x/items/12/info?q=test', {method: 'GET'}],
-        ), 'getFetchOptions() result');
+            extendOptions(options, {endpoint, target}),
+            {...options, method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+        ), 'extendOptions() result');
     });
 
-    await test('getFetchOptions() + random target', () => {
+    await test('extendOptions() + random target', () => {
         let endpoint = 'https://w.cc/x';
         let target = Math.random().toString(36).slice(2);
         let options = {
@@ -113,9 +113,9 @@ function toHTMLTitle(title: string) {
         };
 
         assert(equal(
-            getFetchOptions(endpoint, target, options),
-            ['https://w.cc/x/items/12/info?q=test', {method: 'GET'}],
-        ), 'getFetchOptions() result');
+            extendOptions(options, {endpoint, target}),
+            {...options, method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+        ), 'extendOptions() result');
     });
 
     await test('RequestService(url, handler) + assign()', async () => {

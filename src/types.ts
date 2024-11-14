@@ -58,14 +58,6 @@ export type ResponseShape<T extends ResponseSchema | undefined> =
         // adding response properties not explicitly defined by the schema
         : T & Omit<ResponseSchema, keyof T | 'body'>;
 
-type RequestInitPolyfill = NonNullable<Parameters<typeof fetch>[1]>;
-
-export type FetchOptions =
-    Omit<RequestInitPolyfill, 'headers' | 'body'> & {
-        headers?: Record<string, string>;
-        body?: unknown;
-    };
-
 export type RequestErrorParams = {
     name?: string;
     message?: string;
