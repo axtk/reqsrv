@@ -23,24 +23,11 @@ The constructor accepts a custom request handler `fetchContent`. It's not predef
 The `CustomSchema` type used with the constructor is a custom schema outlining the types of requests and responses within an API, see the example below of what such a schema may look like.
 
 ```ts
-let {ok, status, body} = await service.send('GET /items/:id', {
-    params: {
-        id: 10
-    },
-    query: {
-        mode: 'full'
-    },
-});
-```
-
-The options passed as the second parameter to `send()` are validated as `CustomSchema['GET /items/:id']` (based on the schema type passed to the `RequestService` constructor and the first parameter passed to `send()`).
-
-```ts
 import type {Schema} from 'reqsrv';
 
 // wrapping into the `Schema` generic type is optional, but
 // this helps validate the basic schema structure
-type CustomSchema = Schema<{
+export type CustomSchema = Schema<{
     // a schema key can be any unique string, for an HTTP API
     // a pair of a method and a path can serve this purpose
     'GET /items/:id': {
@@ -70,6 +57,21 @@ type CustomSchema = Schema<{
     // ... and so forth
 }>;
 ```
+
+With such a schema assigned to `service`, calls to its `send()` method will be prevalidated against this schema (which means that a type-aware IDE will warn of type mismatches or typos in the parameters):
+
+```ts
+let {ok, status, body} = await service.send('GET /items/:id', {
+    params: {
+        id: 10,
+    },
+    query: {
+        mode: 'full',
+    },
+});
+```
+
+The options passed as the second parameter to `send()` are validated as `CustomSchema['GET /items/:id']` (based on the schema type passed to the `RequestService` constructor and the first parameter passed to `send()`).
 
 ### Assigning custom method names to API targets
 
