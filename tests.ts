@@ -93,7 +93,7 @@ function toHTMLTitle(title: string) {
 
         assert(equal(
             getFetchOptions(endpoint, target, options),
-            {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+            ['https://w.cc/x/items/12/info?q=test', {method: 'GET'}],
         ), 'getFetchOptions() result');
     });
 
@@ -114,7 +114,7 @@ function toHTMLTitle(title: string) {
 
         assert(equal(
             getFetchOptions(endpoint, target, options),
-            {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+            ['https://w.cc/x/items/12/info?q=test', {method: 'GET'}],
         ), 'getFetchOptions() result');
     });
 
