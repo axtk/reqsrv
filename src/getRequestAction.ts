@@ -2,7 +2,7 @@ import {escapeRegExp} from '../lib/escapeRegExp';
 import {isAbsoluteURL} from '../lib/isAbsoluteURL';
 import type {APITarget, RequestSchema, RequestAction} from './types';
 
-const syntheticBase = 'https://c.cc';
+const syntheticBase = 'https://0.cc';
 
 export type GetRequestActionParams = {
     request: RequestSchema,
