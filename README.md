@@ -126,17 +126,24 @@ As shown above, the `RequestService` constructor takes a custom request handler 
 Here's an example of a basic JSON request handler that can be passed to `RequestService`:
 
 ```ts
-import {RequestHandler, RequestError, getFetchOptions} from 'reqsrv';
+import {
+    RequestHandler,
+    RequestError,
+    extendOptions,
+    toStringValueMap,
+} from 'reqsrv';
 
 const endpoint = 'https://api.example.com';
 
-let fetchJSON: RequestHandler = async (target, options) => {
-    let {url, method, headers} = getFetchOptions(endpoint, target, options);
-    let body = options?.body;
+export const fetchJSON: RequestHandler = async (target, options) => {
+    let {url, method, headers, body} = extendOptions(options, {
+        endpoint,
+        target,
+    });
 
     let response = await fetch(url, {
         method,
-        headers,
+        headers: toStringValueMap(headers),
         body: body ? JSON.stringify(body) : null,
     });
 
