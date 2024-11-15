@@ -2,6 +2,8 @@ import {escapeRegExp} from '../lib/escapeRegExp';
 import {isAbsoluteURL} from '../lib/isAbsoluteURL';
 import type {APITarget, RequestSchema, RequestAction} from './types';
 
+const syntheticBase = 'https://c.cc';
+
 export type GetRequestActionParams = {
     request: RequestSchema,
     target: APITarget;
@@ -13,7 +15,7 @@ export type GetRequestActionParams = {
  *
  * This utility function also produces a full request URL:
  * - by parsing `target` if it matches the pattern
- *   `${HTTPMethod} ${path}`;
+ *   `${HTTPMethod} ${path | url}`;
  * - by filling out colon-prefixed placeholders, it there are any
  *   (e.g. '/items/:id'), with values from `request.params`;
  * - by adding `request.query` params.
@@ -26,23 +28,26 @@ export function getRequestAction({
     let method = request?.method;
     let url = request?.url ?? request?.path;
 
-    // parsing `target` if it matches the pattern of `${HTTPMethod} ${path}`
+    // parsing `target` if it matches the pattern of
+    // `${HTTPMethod} ${path | url}`
     if (target && /^[A-Z]+\s/.test(target)) {
-        let [targetMethod, targetPath] = target.split(/\s+/);
+        let [targetMethod, targetLocation] = target.split(/\s+/);
 
         if (!method)
             method = targetMethod;
 
         if (!url)
-            url = targetPath;
+            url = targetLocation;
     }
 
     let urlObject: URL;
+    let hasAbsoluteURL = isAbsoluteURL(url);
 
-    if (url && isAbsoluteURL(url))
+    if (url && hasAbsoluteURL)
         urlObject = new URL(url);
     else {
-        urlObject = new URL(endpoint);
+        urlObject = new URL(endpoint, syntheticBase);
+        hasAbsoluteURL = isAbsoluteURL(endpoint);
 
         if (url) {
             let path = urlObject.pathname;
@@ -80,8 +85,10 @@ export function getRequestAction({
         }
     }
 
+    let {href, pathname, search, hash} = urlObject;
+
     return {
         method,
-        url: urlObject.href,
+        url: hasAbsoluteURL ? href : pathname + search + hash,
     };
 }
