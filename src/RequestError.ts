@@ -1,4 +1,4 @@
-import {RequestErrorParams} from './types';
+import {RequestErrorParams} from './types/RequestErrorParams';
 
 export const DEFAULT_REQUEST_ERROR_NAME = 'RequestError';
 export const DEFAULT_REQUEST_ERROR_MESSAGE = 'Unspecified';
