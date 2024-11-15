@@ -24,14 +24,14 @@ export class RequestService<S extends Schema> {
      */
     send<T extends keyof S>(
         target: T,
-        options: S[T]['request'],
+        request: S[T]['request'],
     ) {
         if (!this.handler)
             throw new Error('Missing request handler');
 
         return this.handler(
             target as APITarget,
-            options!,
+            request!,
         ) as Promise<ResponseShape<S[T]['response']>>;
     }
 
@@ -63,8 +63,8 @@ export class RequestService<S extends Schema> {
         let api: Record<string, unknown> = {};
 
         for (let [methodName, target] of Object.entries(aliasMap))
-            api[methodName] = (options: RequestSchema) => {
-                return this.send(target, options);
+            api[methodName] = (request: RequestSchema) => {
+                return this.send(target, request);
             };
 
         return api as {

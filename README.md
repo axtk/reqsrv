@@ -129,22 +129,19 @@ Here's an example of a basic JSON request handler that can be passed to `Request
 import {
     RequestHandler,
     RequestError,
-    extendOptions,
+    getRequestAction,
     toStringValueMap,
 } from 'reqsrv';
 
 const endpoint = 'https://api.example.com';
 
-export const fetchJSON: RequestHandler = async (target, options) => {
-    let {url, method, headers, body} = extendOptions(options, {
-        endpoint,
-        target,
-    });
+export const fetchJSON: RequestHandler = async (target, request) => {
+    let {method, url} = getRequestAction({request, target, endpoint});
 
     let response = await fetch(url, {
         method,
-        headers: toStringValueMap(headers),
-        body: body ? JSON.stringify(body) : null,
+        headers: toStringValueMap(request?.headers),
+        body: request?.body ? JSON.stringify(request?.body) : null,
     });
 
     let {ok, status, statusText} = response;

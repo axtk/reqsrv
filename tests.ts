@@ -1,4 +1,4 @@
-import {extendOptions} from './src/extendOptions';
+import {getRequestAction} from './src/getRequestAction';
 import {RequestError} from './src/RequestError';
 import {RequestService} from './src/RequestService';
 import type {RequestHandler, Schema} from './src/types';
@@ -34,8 +34,8 @@ type WiktionarySchema = Schema<{
 
 const endpoint = 'https://en.wiktionary.org';
 
-let fetchText: RequestHandler = async (target, options) => {
-    let {method, url} = extendOptions(options, {endpoint, target});
+let fetchText: RequestHandler = async (target, request) => {
+    let {method, url} = getRequestAction({request, target, endpoint});
 
     let response = await fetch(url, {method});
     let {ok, status, statusText} = response;
@@ -78,10 +78,10 @@ function toHTMLTitle(title: string) {
 }
 
 (async () => {
-    await test('extendOptions() + `${HTTPMethod} ${path}` target', () => {
+    await test('getRequestAction() + `${HTTPMethod} ${path}` target', () => {
         let endpoint = 'https://w.cc/x';
         let target = 'GET /items/:id/:section';
-        let options = {
+        let request = {
             params: {
                 id: 12,
                 section: 'info',
@@ -92,15 +92,15 @@ function toHTMLTitle(title: string) {
         };
 
         assert(equal(
-            extendOptions(options, {endpoint, target}),
-            {...options, method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
-        ), 'extendOptions() result');
+            getRequestAction({request, target, endpoint}),
+            {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+        ), 'getRequestAction() result');
     });
 
-    await test('extendOptions() + random target', () => {
+    await test('getRequestAction() + random target', () => {
         let endpoint = 'https://w.cc/x';
         let target = Math.random().toString(36).slice(2);
-        let options = {
+        let request = {
             method: 'GET',
             url: '/items/:id/:section',
             params: {
@@ -113,9 +113,9 @@ function toHTMLTitle(title: string) {
         };
 
         assert(equal(
-            extendOptions(options, {endpoint, target}),
-            {...options, method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
-        ), 'extendOptions() result');
+            getRequestAction({request, target, endpoint}),
+            {method: 'GET', url: 'https://w.cc/x/items/12/info?q=test'},
+        ), 'getRequestAction() result');
     });
 
     await test('RequestService(url, handler) + assign()', async () => {

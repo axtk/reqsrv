@@ -1,31 +1,30 @@
 import {escapeRegExp} from '../lib/escapeRegExp';
 import {isAbsoluteURL} from '../lib/isAbsoluteURL';
-import type {APITarget, RequestSchema} from './types';
+import type {APITarget, RequestSchema, RequestAction} from './types';
 
-export type ExtendOptionsParams = {
+export type GetRequestActionParams = {
+    request: RequestSchema,
+    target: APITarget;
     endpoint: string;
-    target?: APITarget;
-};
-
-/** Non-voidable `RequestSchema` with a non-optional `url`. */
-export type ExtendedRequestSchema = Omit<Exclude<RequestSchema, void>, 'url'> & {
-    url: string;
 };
 
 /**
- * Transforms `RequestService` handler params to `fetch()` params and
- * returns the pair `[url, fetchOptions]`.
+ * Returns `{method, url}` from the given request options.
  *
- * It's assumed that the `target` parameter matches the pattern
- * `${HTTPMethod} ${path}` and may contain colon-prefixed placeholder
- * parameters corresponding to `options.params` (e.g. 'GET /items/:id').
+ * This utility function also produces a full request URL:
+ * - by parsing `target` if it matches the pattern
+ *   `${HTTPMethod} ${path}`;
+ * - by filling out colon-prefixed placeholders, it there are any
+ *   (e.g. '/items/:id'), with values from `request.params`;
+ * - by adding `request.query` params.
  */
-export function extendOptions(options: RequestSchema, {
+export function getRequestAction({
+    request,
     target,
     endpoint,
-}: ExtendOptionsParams): ExtendedRequestSchema {
-    let method = options?.method;
-    let url = options?.url ?? options?.path;
+}: GetRequestActionParams): RequestAction {
+    let method = request?.method;
+    let url = request?.url ?? request?.path;
 
     // parsing `target` if it matches the pattern of `${HTTPMethod} ${path}`
     if (target && /^[A-Z]+\s/.test(target)) {
@@ -61,8 +60,8 @@ export function extendOptions(options: RequestSchema, {
         }
     }
 
-    let query = options?.query;
-    let params = options?.params;
+    let query = request?.query;
+    let params = request?.params;
 
     if (query) {
         for (let [key, value] of Object.entries(query)) {
@@ -82,7 +81,6 @@ export function extendOptions(options: RequestSchema, {
     }
 
     return {
-        ...options,
         method,
         url: urlObject.href,
     };

@@ -49,7 +49,7 @@ export type AliasMap<S extends Schema> = Record<string, keyof S>;
 
 export type RequestHandler = (
     target: APITarget,
-    options: RequestSchema,
+    request: RequestSchema,
 ) => Promise<ResponseSchema>;
 
 export type ResponseShape<T extends ResponseSchema | undefined> =
@@ -64,4 +64,9 @@ export type RequestErrorParams = {
     status?: number;
     statusText?: string;
     data?: unknown;
+};
+
+export type RequestAction = {
+    method?: string;
+    url: string;
 };
