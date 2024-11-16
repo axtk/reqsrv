@@ -1,5 +1,7 @@
 export * from './src/types/AliasMap';
 export * from './src/types/APITarget';
+export * from './src/types/PartialRequest';
+export * from './src/types/PartialResponse';
 export * from './src/types/RequestAction';
 export * from './src/types/RequestErrorParams';
 export * from './src/types/RequestHandler';
