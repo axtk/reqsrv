@@ -5,8 +5,6 @@ export * from './src/types/PartialResponse';
 export * from './src/types/RequestAction';
 export * from './src/types/RequestErrorParams';
 export * from './src/types/RequestHandler';
-export * from './src/types/RequestParams';
-export * from './src/types/RequestQuery';
 export * from './src/types/RequestSchema';
 export * from './src/types/ResponseSchema';
 export * from './src/types/ResponseShape';
