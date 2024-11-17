@@ -15,10 +15,10 @@ The `RequestService` class helps create a type-safe entrypoint to an API:
 ```ts
 import {RequestService} from 'reqsrv';
 
-let service = new RequestService<CustomSchema>(fetchContent);
+let service = new RequestService<CustomSchema>(fetchData);
 ```
 
-The constructor accepts a custom request handler `fetchContent`. It's not predefined by the package, since it can vary in many ways depending on the purpose and environment of the application (it might make use of `fetch`, `node-fetch`, `axios`, `grpc-js`, logging, default headers, or whatever necessary).
+The constructor accepts a custom request handler `fetchData`. It's not predefined by the package, since it can vary in many ways depending on the purpose and environment of the application (it might make use of `fetch`, `node-fetch`, `axios`, logging, default headers, or whatever necessary).
 
 The `CustomSchema` type used with the constructor is a custom schema outlining the types of requests and responses within an API, see the example below of what such a schema may look like.
 
