@@ -13,11 +13,11 @@ function getProp<T, K extends keyof RequestErrorParams<T>>(
 }
 
 export class RequestError<T = unknown> extends Error {
-    data: T;
+    data: T | undefined;
     status: number;
     statusText: string;
 
-    constructor(options: unknown) {
+    constructor(options?: unknown) {
         let params: Partial<RequestErrorParams<T>> = {
             status: getProp<T, 'status'>(options, 'status'),
             statusText: getProp<T, 'statusText'>(options, 'statusText'),
@@ -35,7 +35,7 @@ export class RequestError<T = unknown> extends Error {
 
         this.status = Number(params.status ?? 0);
         this.statusText = String(params.statusText ?? '');
-        this.data = params.data!;
+        this.data = params.data;
 
         // @see https://github.com/Microsoft/TypeScript-wiki/blob/main/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
         Object.setPrototypeOf(this, RequestError.prototype);
