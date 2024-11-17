@@ -3,7 +3,6 @@ import type {APITarget} from './APITarget';
 export type RequestSchema = void | {
     target?: APITarget;
     method?: string;
-    service?: string;
     url?: string;
     path?: string;
     /**
