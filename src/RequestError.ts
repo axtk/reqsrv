@@ -3,27 +3,27 @@ import {RequestErrorParams} from './types/RequestErrorParams';
 export const DEFAULT_REQUEST_ERROR_NAME = 'RequestError';
 export const DEFAULT_REQUEST_ERROR_MESSAGE = 'Unspecified';
 
-function getProp<K extends keyof RequestErrorParams>(
+function getProp<T, K extends keyof RequestErrorParams<T>>(
     x: unknown,
     key: K,
 ) {
     if (!x || typeof x !== 'object' || !(key in x))
         return undefined;
-    return x[key as keyof typeof x] as RequestErrorParams[K];
+    return x[key as keyof typeof x] as RequestErrorParams<T>[K];
 }
 
-export class RequestError extends Error {
-    data: RequestErrorParams['data'];
+export class RequestError<T = unknown> extends Error {
+    data: RequestErrorParams<T>['data'];
     status: RequestErrorParams['status'];
     statusText: RequestErrorParams['statusText'];
 
     constructor(options: unknown) {
-        let props: RequestErrorParams = {
-            status: getProp(options, 'status'),
-            statusText: getProp(options, 'statusText'),
-            message: getProp(options, 'message'),
-            name: getProp(options, 'name'),
-            data: getProp(options, 'data'),
+        let props: RequestErrorParams<T> = {
+            status: getProp<T, 'status'>(options, 'status'),
+            statusText: getProp<T, 'statusText'>(options, 'statusText'),
+            message: getProp<T, 'message'>(options, 'message'),
+            name: getProp<T, 'name'>(options, 'name'),
+            data: getProp<T, 'data'>(options, 'data'),
         };
 
         let statusMessage = [props.status, props.statusText]
