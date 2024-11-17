@@ -13,12 +13,12 @@ function getProp<T, K extends keyof RequestErrorParams<T>>(
 }
 
 export class RequestError<T = unknown> extends Error {
-    data: RequestErrorParams<T>['data'];
-    status: RequestErrorParams['status'];
-    statusText: RequestErrorParams['statusText'];
+    data: T;
+    status: number;
+    statusText: string;
 
     constructor(options: unknown) {
-        let props: RequestErrorParams<T> = {
+        let params: Partial<RequestErrorParams<T>> = {
             status: getProp<T, 'status'>(options, 'status'),
             statusText: getProp<T, 'statusText'>(options, 'statusText'),
             message: getProp<T, 'message'>(options, 'message'),
@@ -26,16 +26,16 @@ export class RequestError<T = unknown> extends Error {
             data: getProp<T, 'data'>(options, 'data'),
         };
 
-        let statusMessage = [props.status, props.statusText]
+        let statusMessage = [params.status, params.statusText]
             .filter(Boolean)
             .join(' ');
 
-        super(props.message || statusMessage || DEFAULT_REQUEST_ERROR_MESSAGE);
-        this.name = props.name ?? DEFAULT_REQUEST_ERROR_NAME;
+        super(params.message || statusMessage || DEFAULT_REQUEST_ERROR_MESSAGE);
+        this.name = params.name ?? DEFAULT_REQUEST_ERROR_NAME;
 
-        this.status = Number(props.status ?? 0);
-        this.statusText = String(props.statusText ?? '');
-        this.data = props.data;
+        this.status = Number(params.status ?? 0);
+        this.statusText = String(params.statusText ?? '');
+        this.data = params.data!;
 
         // @see https://github.com/Microsoft/TypeScript-wiki/blob/main/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
         Object.setPrototypeOf(this, RequestError.prototype);
