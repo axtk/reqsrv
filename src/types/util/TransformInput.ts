@@ -1,5 +1,5 @@
-import type {APITarget} from './APITarget';
-import type {RequestSchema} from './RequestSchema';
+import type {APITarget} from '../APITarget';
+import type {RequestSchema} from '../RequestSchema';
 
 type RequestInitPolyfill = NonNullable<Parameters<typeof fetch>[1]>;
 

@@ -1,4 +1,4 @@
-import type {SchemaEntry} from './SchemaEntry';
+import type {SchemaEntry} from '../SchemaEntry';
 
 export type PartialRequest<
     T extends SchemaEntry,
