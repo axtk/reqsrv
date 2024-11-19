@@ -11,6 +11,7 @@ export * from './src/types/ResponseShape';
 export * from './src/types/Schema';
 export * from './src/types/SchemaEntry';
 export * from './src/types/SchemaEntryShape';
+export * from './src/types/TransformInput';
 export * from './src/utils/getRequestAction';
 export * from './src/utils/toStringValueMap';
 export * from './src/RequestService';
