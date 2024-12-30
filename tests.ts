@@ -53,7 +53,7 @@ let fetchText: RequestHandler = async (target, request) => {
             ok,
             status,
             statusText,
-            body: (await response.text()).substring(0, 256) + '...',
+            body: (await response.text()).substring(0, 1500) + '...',
         };
     }
     catch (error) {
