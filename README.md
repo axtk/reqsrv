@@ -1,14 +1,14 @@
 # reqsrv
 
-*Utilities for typing web APIs*
+Utilities for typing web APIs
 
-## Features
+- Type-safe request handler based on a custom API schema
+- Isomorphic interface for handling API requests
+- No internal dependence on a specific request utility
 
-- type-safe request handlers based on a custom API schema;
-- common environment-agnostic interface for handling API requests;
-- no internal dependence on a specific request utility.
+Installation: `npm i -D reqsrv`
 
-## Usage
+## `RequestService`
 
 The `RequestService` class helps create a type-safe entrypoint to an API:
 
@@ -73,7 +73,7 @@ let {ok, status, body} = await service.send('GET /items/:id', {
 
 The options passed as the second parameter to `send()` are validated as `CustomSchema['GET /items/:id']` (based on the schema type passed to the `RequestService` constructor and the first parameter passed to `send()`).
 
-### Assigning custom method names to API targets
+## Assigning custom method names to API targets
 
 Schema keys can be mapped to new methods:
 
@@ -119,7 +119,7 @@ let firstUser = await api.users.getInfo({params: {id: userList[0].id}});
 
 For API methods controlled only with query parameters, there is also a shorthand option: the `assignQuery()` method, returning aliases accepting only query parameters, without the need to nest them into the `query` key.
 
-### Custom request handler
+## Custom request handler
 
 As shown above, the `RequestService` constructor takes a custom request handler as a parameter. Internal independence of `RequestService` from a fixed built-in request handler allows to handle requests of all sorts and environments (the browser or node) without locking in with a certain request library.
 
