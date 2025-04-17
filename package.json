@@ -10,7 +10,7 @@
     "compile": "npm-run-all compile:src compile:tests",
     "compile:src": "esbuild index.ts --bundle --outfile=dist/index.js --platform=neutral --minify",
     "compile:tests": "esbuild tests.ts --bundle --outfile=dist/tests.js --platform=neutral",
-    "gh-pages": "npx ghstage --color-scheme=mediumslateblue --theme=tiles",
+    "gh-pages": "npx ghstage --color-scheme=mediumslateblue --theme=tiles --jsorg",
     "prepublishOnly": "npm-run-all build test gh-pages",
     "preversion": "npm-run-all build test",
     "test": "node dist/tests.js"
