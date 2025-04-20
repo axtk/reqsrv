@@ -1,6 +1,6 @@
 {
   "name": "reqsrv",
-  "version": "4.5.19",
+  "version": "4.5.20",
   "description": "Utilities for typing web APIs",
   "main": "dist/index.js",
   "type": "module",
