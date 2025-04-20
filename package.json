@@ -19,6 +19,7 @@
     "type": "git",
     "url": "git+https://github.com/axtk/reqsrv.git"
   },
+  "homepage": "https://reqsrv.js.org",
   "keywords": [
     "typed api",
     "schema",
