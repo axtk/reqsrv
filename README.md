@@ -1,3 +1,5 @@
+[![npm](https://flat.badgen.net/npm/v/reqsrv?labelColor=345&color=46e)](https://www.npmjs.com/package/reqsrv) ![Lightweight](https://flat.badgen.net/bundlephobia/minzip/reqsrv/?labelColor=345&color=46e) ![TypeScript ✓](https://flat.badgen.net/badge/TypeScript/✓?labelColor=345&color=345)
+
 # reqsrv
 
 *Utilities for typing web APIs*
