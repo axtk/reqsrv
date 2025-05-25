@@ -1,12 +1,12 @@
 # reqsrv
 
-Utilities for typing web APIs
+*Utilities for typing web APIs*
 
 - Type-safe request handler based on a custom API schema
-- Isomorphic interface for handling API requests
+- Shared interface for handling API requests on the client and the server
 - No internal dependence on a specific request utility
 
-Installation: `npm i -D reqsrv`
+Installation: `npm i reqsrv`
 
 ## `RequestService`
 
