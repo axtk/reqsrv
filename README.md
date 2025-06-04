@@ -40,7 +40,7 @@ Same API schema, same request interface, same reusable related code, different e
 
 ## Schema definition
 
-The `APISchema` type used with the constructor is a custom schema outlining the types of requests and responses within an API. The example below shows what such a schema may look like.
+The `APISchema` type used with the [`RequestService`](#requestservice) constructor is a custom schema outlining the types of requests and responses within an API. The example below shows what such a schema may look like.
 
 ```ts
 import type {Schema} from 'reqsrv';
@@ -78,7 +78,7 @@ export type APISchema = Schema<{
 }>;
 ```
 
-With such a schema assigned to `service`, calls to its `send()` method will be prevalidated against this schema (which means that a type-aware IDE will warn of type mismatches or typos in the parameters):
+With such a schema assigned to `service`, calls to its `send()` method will be prevalidated against this schema, which means that a type-aware IDE will warn of type mismatches or typos in the parameters:
 
 ```ts
 let {ok, status, body} = await service.send('GET /items/:id', {
@@ -91,7 +91,7 @@ let {ok, status, body} = await service.send('GET /items/:id', {
 });
 ```
 
-The options passed as the second parameter to `send()` are validated as `APISchema['GET /items/:id']` (based on the schema type passed to the `RequestService` constructor and the first parameter passed to `send()`).
+The options passed as the second parameter to `send()` are validated as `APISchema['GET /items/:id']` based on the schema type passed to the `RequestService` constructor and the first parameter passed to `send()`.
 
 ## Shorthand methods
 
