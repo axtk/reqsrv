@@ -80,7 +80,7 @@ The options passed as the second parameter to `send()` are validated as `CustomS
 Schema keys can be mapped to new methods:
 
 ```ts
-let api = service.assign({
+let api = service.getEntry({
     getItems: 'GET /items',
     getItem: 'GET /items/:id',
     setItem: 'POST /items/:id',
@@ -100,15 +100,15 @@ let response = await api.getItem({
 });
 ```
 
-The `assign()` method doesn't have to take all the API schema keys at once. The API methods can be split into logical subsets and arranged in different namespaces:
+The `getEntry()` method doesn't have to take all the API schema keys at once. The API methods can be split into logical subsets and arranged in different namespaces:
 
 ```ts
 let api = {
-    users: service.assign({
+    users: service.getEntry({
         getList: 'GET /users',
         getInfo: 'GET /users/:id',
     }),
-    items: service.assign({
+    items: service.getEntry({
         getList: 'GET /items',
         getInfo: 'GET /items/:id',
         setInfo: 'POST /items/:id',
@@ -119,7 +119,7 @@ let userList = await api.users.getList();
 let firstUser = await api.users.getInfo({params: {id: userList[0].id}});
 ```
 
-For API methods controlled only with query parameters, there is also a shorthand option: the `assignQuery()` method, returning aliases accepting only query parameters, without the need to nest them into the `query` key.
+For API methods controlled only with query parameters, there is also a shorthand option: the `getQueryEntry()` method, returning aliases accepting only query parameters, without the need to nest them into the `query` key.
 
 ## Custom request handler
 
