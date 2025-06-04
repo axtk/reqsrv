@@ -17,19 +17,37 @@ The `RequestService` class helps create a type-safe entrypoint to an API:
 ```ts
 import {RequestService} from 'reqsrv';
 
-let service = new RequestService<CustomSchema>(fetchData);
+let service = new RequestService<APISchema>(fetchData);
 ```
 
-The constructor accepts a custom request handler `fetchData`. It's not predefined by the package, since it can vary in many ways depending on the purpose and environment of the application (it might make use of `fetch`, `node-fetch`, `axios`, logging, default headers, or whatever necessary).
+The constructor accepts a custom request handler `fetchData`. A specific request handler isn't built into the package, since it can vary in many ways depending on the purpose and environment of the application (it might make use of `fetch`, `node-fetch`, `axios`, logging, default headers, or whatever necessary).
 
-The `CustomSchema` type used with the constructor is a custom schema outlining the types of requests and responses within an API, see the example below of what such a schema may look like.
+The purpose of `RequestService` is to offer a consistent environment-agnostic interface to request handling on top of a typed API schema.
+
+🔹 A typed schema allows to prevalidate request inputs at compile-time and highlight mismatches in a type-aware IDE.
+
+🔹 The environment-agnostic interface works consistently throughout the client and the server:
+
+```ts
+let browserClient = new RequestService<APISchema>(clientHandler);
+```
+
+```ts
+let serverClient = new RequestService<APISchema>(serverHandler);
+```
+
+Same API schema, same request interface, same reusable related code, different environment-specific request handlers.
+
+## Schema definition
+
+The `APISchema` type used with the constructor is a custom schema outlining the types of requests and responses within an API. The example below shows what such a schema may look like.
 
 ```ts
 import type {Schema} from 'reqsrv';
 
 // wrapping into the `Schema` generic type is optional, but
 // this helps validate the basic schema structure
-export type CustomSchema = Schema<{
+export type APISchema = Schema<{
     // a schema key can be any unique string, for an HTTP API
     // a pair of a method and a path can serve this purpose
     'GET /items/:id': {
@@ -73,11 +91,11 @@ let {ok, status, body} = await service.send('GET /items/:id', {
 });
 ```
 
-The options passed as the second parameter to `send()` are validated as `CustomSchema['GET /items/:id']` (based on the schema type passed to the `RequestService` constructor and the first parameter passed to `send()`).
+The options passed as the second parameter to `send()` are validated as `APISchema['GET /items/:id']` (based on the schema type passed to the `RequestService` constructor and the first parameter passed to `send()`).
 
-## Assigning custom method names to API targets
+## Shorthand methods
 
-Schema keys can be mapped to new methods:
+The API schema keys can be mapped to custom method names:
 
 ```ts
 let api = service.getEntry({
@@ -100,7 +118,7 @@ let response = await api.getItem({
 });
 ```
 
-The `getEntry()` method doesn't have to take all the API schema keys at once. The API methods can be split into logical subsets and arranged in different namespaces:
+The `getEntry()` method doesn't have to take all the API schema keys at once. The API methods can be split into logical scopes:
 
 ```ts
 let api = {
@@ -123,7 +141,7 @@ For API methods controlled only with query parameters, there is also a shorthand
 
 ## Custom request handler
 
-As shown above, the `RequestService` constructor takes a custom request handler as a parameter. Internal independence of `RequestService` from a fixed built-in request handler allows to handle requests of all sorts and environments (the browser or node) without locking in with a certain request library.
+As shown above, the `RequestService` constructor takes a custom request handler as a parameter. Internal independence of `RequestService` from a fixed built-in request handler allows to handle requests of all sorts and environments (the browser or node) without locking in with a certain approach to handling requests.
 
 Here's an example of a basic JSON request handler that can be passed to `RequestService`:
 
