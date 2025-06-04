@@ -46,7 +46,7 @@ export class RequestService<S extends Schema> {
      * @example
      * ```
      * let service = new RequestService<CustomSchema>(handler);
-     * let api = service.assign({
+     * let api = service.getEntry({
      *     getItem: 'GET /items/:id',
      * });
      *
@@ -57,7 +57,7 @@ export class RequestService<S extends Schema> {
      * api.getItem({params: {id: 1}});
      * ```
      */
-    assign<T extends AliasMap<S>>(aliasMap: T) {
+    getEntry<T extends AliasMap<S>>(aliasMap: T) {
         let api: Record<string, unknown> = {};
 
         for (let [methodName, target] of Object.entries(aliasMap))
@@ -73,7 +73,7 @@ export class RequestService<S extends Schema> {
     }
 
     /**
-     * Similar to `.assign()`, with the returned aliases accepting
+     * Similar to `.getEntry()`, with the returned aliases accepting
      * only the query part of the request schema.
      *
      * This is a shorthand option for API methods fully controlled by
@@ -81,7 +81,7 @@ export class RequestService<S extends Schema> {
      *
      * @example
      * ```
-     * let api = service.assign({
+     * let api = service.getEntry({
      *     getItem: 'GET /item',
      * });
      * api.getItem({
@@ -92,7 +92,7 @@ export class RequestService<S extends Schema> {
      * This is equivalent to:
      *
      * ```
-     * let api = service.assignQuery({
+     * let api = service.getQueryEntry({
      *     getItem: 'GET /item',
      * });
      * api.getItem({id: 1});
@@ -102,7 +102,7 @@ export class RequestService<S extends Schema> {
      * options into the `query` key, which might seem redundant for
      * API methods controlled only with query parameters.
      */
-    assignQuery<T extends AliasMap<S>>(aliasMap: T) {
+    getQueryEntry<T extends AliasMap<S>>(aliasMap: T) {
         let api: Record<string, unknown> = {};
 
         for (let [methodName, target] of Object.entries(aliasMap))
