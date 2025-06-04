@@ -1,7 +1,7 @@
 {
   "name": "reqsrv",
   "version": "4.5.22",
-  "description": "Utilities for typing web APIs",
+  "description": "Typed SDK factory for web APIs",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -21,10 +21,13 @@
   },
   "homepage": "https://reqsrv.js.org",
   "keywords": [
-    "typed api",
+    "api",
+    "sdk",
     "schema",
-    "typed schema",
-    "sdk"
+    "request",
+    "typed api",
+    "typed sdk",
+    "typed schema"
   ],
   "author": "axtk",
   "license": "ISC",

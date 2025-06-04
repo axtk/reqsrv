@@ -2,7 +2,7 @@
 
 # reqsrv
 
-*Utilities for typing web APIs*
+*Typed SDK factory for web APIs*
 
 - Type-safe request handler based on a custom API schema
 - Shared interface for handling API requests on the client and the server
