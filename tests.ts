@@ -129,7 +129,7 @@ function toHTMLTitle(title: string) {
         assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
         assert(res1.body.includes(toHTMLTitle('example')), 'send title');
 
-        let api = service.assign({search: 'GET /w'});
+        let api = service.getEntry({search: 'GET /w'});
 
         let res2 = await api.search({
             query: {search: 'example', fulltext: 1},
@@ -153,7 +153,7 @@ function toHTMLTitle(title: string) {
         assert(equal([res1.ok, res1.status, res1.statusText], [true, 200, 'OK']), 'send');
         assert(res1.body?.includes(toHTMLTitle('example')), 'send title');
 
-        let api = service.assign({fetchSection: 'GET /:section'});
+        let api = service.getEntry({fetchSection: 'GET /:section'});
 
         let res2 = await api.fetchSection({
             params: {section: 'w'},
@@ -182,7 +182,7 @@ function toHTMLTitle(title: string) {
             }
         }
 
-        let api = service.assign({fetchSection: 'GET /:section'});
+        let api = service.getEntry({fetchSection: 'GET /:section'});
 
         try {
             await api.fetchSection({
