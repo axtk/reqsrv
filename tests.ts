@@ -119,7 +119,7 @@ function toHTMLTitle(title: string) {
         ), 'getRequestAction() result');
     });
 
-    await test('RequestService(url, handler) + assign()', async () => {
+    await test('RequestService(url, handler) + getEntry()', async () => {
         let service = new RequestService<WiktionarySchema>(fetchText);
 
         let res1 = await service.send('GET /w', {
