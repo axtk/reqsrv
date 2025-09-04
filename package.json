@@ -12,8 +12,9 @@
     "compile:tests": "npx esbuild tests.ts --bundle --outfile=dist/tests.js --platform=neutral",
     "gh-pages": "npx ghstage --color-scheme=mediumslateblue --ymid=101149630 --jsorg",
     "prepublishOnly": "npx npm-run-all build test gh-pages",
-    "preversion": "npx npm-run-all build test",
-    "test": "node dist/tests.js"
+    "preversion": "npx npm-run-all typecheck build test",
+    "test": "node dist/tests.js",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
   "author": "axtk",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^22.9.0"
+    "@types/node": "^22.9.0",
+    "typescript": "^5.9.2"
   }
 }
