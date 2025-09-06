@@ -10,7 +10,7 @@
     "compile": "npx npm-run-all compile:src compile:tests",
     "compile:src": "npx esbuild index.ts --bundle --outfile=dist/index.js --platform=neutral",
     "compile:tests": "npx esbuild tests.ts --bundle --outfile=dist/tests.js --platform=neutral",
-    "gh-pages": "npx ghstage --color-scheme=mediumslateblue --ymid=101149630 --jsorg",
+    "gh-pages": "npx ghstage --color-scheme=mediumslateblue --ymid=101149630 --jsorg --redirect=https://t8js.github.io/sdk-factory",
     "prepublishOnly": "npx npm-run-all build test gh-pages",
     "preversion": "npx npm-run-all typecheck build test",
     "test": "node dist/tests.js",
@@ -20,7 +20,6 @@
     "type": "git",
     "url": "git+https://github.com/axtk/reqsrv.git"
   },
-  "homepage": "https://reqsrv.js.org",
   "keywords": [
     "api",
     "sdk",
